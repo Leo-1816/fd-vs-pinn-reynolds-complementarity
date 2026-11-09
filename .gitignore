@@ -14,4 +14,6 @@ wheels/
 CLAUDE.md
 instructions_projet.md
 .gitignore
-/project_schedule/*
+project_schedule/meetings
+project_schedule/schedule
+project_schedule/thoughts

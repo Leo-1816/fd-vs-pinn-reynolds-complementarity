@@ -51,7 +51,7 @@ def autograd_first_and_second_derivative(
 def centred_finite_difference_derivatives(
     function, sample_points: SamplePoints, step: float = 1e-4
 ) -> tuple[ColumnValues, ColumnValues]:
-    """Independent sanity check: centred differences, O(step^2) accurate."""
+    """Return (dy/dx, d2y/dx2) at each sample point using centred finite differences."""
     with torch.no_grad():
         f_plus = function(sample_points + step)
         f_centre = function(sample_points)
@@ -85,7 +85,7 @@ def analytic_function_second_derivative_by_hand(x: SamplePoints) -> ColumnValues
 # Comparison report
 # ---------------------------------------------------------------------------
 def make_sample_points(n_points: int = 101) -> SamplePoints:
-    return torch.linspace(-3.0, 3.0, n_points, dtype=DTYPE).reshape(-1, 1)
+    return torch.linspace(-3.0, 3.0, n_points, dtype=DTYPE, requires_grad=True).reshape(-1, 1)
 
 
 def max_abs_error(a: ColumnValues, b: ColumnValues) -> float:
@@ -111,7 +111,7 @@ def main() -> None:
     print(f"seed = {SEED}, dtype = {DTYPE}")
 
     # Part 1
-    x = make_sample_points().requires_grad_(True)
+    x = make_sample_points()
     print_comparison(
         "Part 1: f(x) = x^2 sin(x)",
         by_hand=(

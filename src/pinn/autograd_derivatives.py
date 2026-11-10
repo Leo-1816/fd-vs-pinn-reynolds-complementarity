@@ -2,15 +2,15 @@
 by automatic differentiation, and by centred finite differences.
 
 Part 1: analytic function f(x) = x^2 sin(x).
-Part 2: one-hidden-layer network u(x) = W2 . tanh(W1 x + b1) + b2.
+
 
 Everything runs in float64: we want to check agreement down to machine
 precision, which float32 (~1e-7 noise) would hide.
 
-Run: uv run python src/pinn/autograd_derivatives.py
+
 """
 
-from dataclasses import dataclass
+
 
 import torch
 
@@ -19,21 +19,19 @@ SEED = 0
 
 # Type aliases: a column of sample points, shape (n_points, 1),
 # and the matching column of values/derivatives.
-SamplePoints = torch.Tensor
-ColumnValues = torch.Tensor
+SamplePoints = torch.Tensor # x abscisses 
+ColumnValues = torch.Tensor  # y function values
 
 
 # ---------------------------------------------------------------------------
-# Generic autograd helper
+# autograd
 # ---------------------------------------------------------------------------
 def autograd_first_and_second_derivative(
     function_values: ColumnValues, sample_points: SamplePoints
 ) -> tuple[ColumnValues, ColumnValues]:
     """Return (dy/dx, d2y/dx2) at each sample point using torch.autograd.grad.
 
-    The points are independent of each other, so summing the outputs gives
-    one scalar whose gradient w.r.t. x_i is exactly dy_i/dx_i.
-    create_graph=True keeps the graph of the first derivative so that it can
+    create_graph=True is necessary so that it can
     be differentiated again (this is what a PINN needs for y'').
     """
     first_derivative = torch.autograd.grad(
@@ -43,6 +41,11 @@ def autograd_first_and_second_derivative(
         first_derivative.sum(), sample_points, create_graph=True
     )[0]
     return first_derivative, second_derivative
+
+
+# ---------------------------------------------------------------------------
+# FD
+# ---------------------------------------------------------------------------
 
 
 def centred_finite_difference_derivatives(
@@ -76,62 +79,6 @@ def analytic_function_second_derivative_by_hand(x: SamplePoints) -> ColumnValues
     return (2.0 - x**2) * torch.sin(x) + 4.0 * x * torch.cos(x)
 
 
-# ---------------------------------------------------------------------------
-# Part 2: one-hidden-layer tanh network, written explicitly
-# ---------------------------------------------------------------------------
-@dataclass(frozen=True)
-class TanhNetworkParameters:
-    """u(x) = W2 . tanh(W1 x + b1) + b2, scalar input and output.
-
-    Shapes: input_weights (1, H), input_biases (1, H),
-            output_weights (H, 1), output_bias (1,).
-    """
-
-    input_weights: torch.Tensor
-    input_biases: torch.Tensor
-    output_weights: torch.Tensor
-    output_bias: torch.Tensor
-
-
-def make_random_tanh_network(hidden_width: int, seed: int = SEED) -> TanhNetworkParameters:
-    generator = torch.Generator().manual_seed(seed)
-
-    def draw(*shape: int) -> torch.Tensor:
-        return torch.randn(*shape, generator=generator, dtype=DTYPE)
-
-    return TanhNetworkParameters(
-        input_weights=draw(1, hidden_width),
-        input_biases=draw(1, hidden_width),
-        output_weights=draw(hidden_width, 1),
-        output_bias=draw(1),
-    )
-
-
-def tanh_network(params: TanhNetworkParameters, x: SamplePoints) -> ColumnValues:
-    pre_activation = x @ params.input_weights + params.input_biases  # (n, H)
-    return torch.tanh(pre_activation) @ params.output_weights + params.output_bias
-
-
-def tanh_network_derivatives_by_hand(
-    params: TanhNetworkParameters, x: SamplePoints
-) -> tuple[ColumnValues, ColumnValues]:
-    """With z = W1 x + b1 and s = tanh(z), using tanh' = 1 - tanh^2:
-
-        u'(x)  = sum_k W2_k * W1_k   * (1 - s_k^2)
-        u''(x) = sum_k W2_k * W1_k^2 * (-2 s_k (1 - s_k^2))
-
-    (the bias b2 disappears, b1 only enters through z).
-    """
-    pre_activation = x @ params.input_weights + params.input_biases  # (n, H)
-    activation = torch.tanh(pre_activation)
-    tanh_derivative = 1.0 - activation**2
-    tanh_second_derivative = -2.0 * activation * tanh_derivative
-
-    first_derivative = (params.input_weights * tanh_derivative) @ params.output_weights
-    second_derivative = (
-        params.input_weights**2 * tanh_second_derivative
-    ) @ params.output_weights
-    return first_derivative, second_derivative
 
 
 # ---------------------------------------------------------------------------
@@ -177,19 +124,9 @@ def main() -> None:
         ),
     )
 
-    # Part 2
-    params = make_random_tanh_network(hidden_width=5)
-    x = make_sample_points().requires_grad_(True)
-    print_comparison(
-        "Part 2: u(x) = W2 . tanh(W1 x + b1) + b2  (hidden width 5)",
-        by_hand=tanh_network_derivatives_by_hand(params, x),
-        by_autograd=autograd_first_and_second_derivative(tanh_network(params, x), x),
-        by_finite_difference=centred_finite_difference_derivatives(
-            lambda points: tanh_network(params, points), x.detach()
-        ),
-    )
-    print("\nExpected: hand vs autograd ~1e-15 (exact up to rounding),")
-    print("          hand vs FD ~1e-8 for y' and ~1e-6 for y'' (truncation + rounding).")
+    
+    print("\nExpected: hand vs autograd ~1e-15 (exact),")
+    print("          hand vs FD ~1e-8  (truncation).")
 
 
 if __name__ == "__main__":

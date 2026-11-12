@@ -57,9 +57,6 @@ def make_network(hidden_width: int = 20) -> nn.Module:
     Pistes :
     - Inspire-toi de make_network dans first_pinn_ode.py, ou essaie
       directement une seule couche cachée : Linear -> Tanh -> Linear.
-    - Pour la comparaison du TODO 4, prends la MÊME architecture que ton
-      réseau codé à la main (même nombre de couches, de neurones, même
-      activation).
     - N'oublie pas .to(DTYPE).
     """
     return nn.Sequential(

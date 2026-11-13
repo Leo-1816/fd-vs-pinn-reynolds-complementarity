@@ -21,3 +21,10 @@ pythonpath = ["src"]
 
 [tool.uv.build-backend]
 module-name = ["pri", "pinn"]
+
+[dependency-groups]
+dev = [
+    "furo>=2025.12.19",
+    "sphinx>=9.2.0",
+    "sphinxcontrib-bibtex>=2.7.0",
+]

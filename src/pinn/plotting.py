@@ -73,6 +73,10 @@ def plot_network_vs_exact_solution(
     axes_error.semilogy(x_plot_np, absolute_error.squeeze().numpy(), color=COLOR_NETWORK, linewidth=2)
     axes_error.set_xlabel("x")
     axes_error.set_ylabel("|y(x; w, b) - y exacte|")
+    axes_error.set_title(
+        f"Erreur absolue (max = {absolute_error.max().item():.1e})",
+        loc="left", fontsize="medium", color=COLOR_TEXT_SECONDARY,
+    )
     style_axes(axes_error)
 
     figure.tight_layout()

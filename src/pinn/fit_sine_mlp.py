@@ -52,13 +52,7 @@ def make_training_data(n_points: int) -> tuple[SamplePoints, ColumnValues]:
 # 2. Le réseau
 # ---------------------------------------------------------------------------
 def make_network(hidden_width: int = 20) -> nn.Module:
-    """x (1 valeur) -> y (1 valeur).
-
-    Pistes :
-    - Inspire-toi de make_network dans first_pinn_ode.py, ou essaie
-      directement une seule couche cachée : Linear -> Tanh -> Linear.
-    - N'oublie pas .to(DTYPE).
-    """
+    """x (1 valeur) -> y (1 valeur), une couche cachée tanh de hidden_width neurones."""
     return nn.Sequential(
         nn.Linear(1, hidden_width),
         nn.Tanh(),
@@ -91,8 +85,7 @@ def train(
 ) -> list[float]:
     """Minimise mean_squared_error_loss avec Adam. Renvoie l'historique de la perte.
 
-    Tu l'as déjà écrite pour le PINN : les mêmes 4 étapes. Seule la perte change.
-    Essaie de l'écrire sans regarder first_pinn_ode.py.
+    Mêmes 4 étapes par itération que pour le PINN : seule la perte change.
     """
     optimizer = torch.optim.Adam(network.parameters(), lr=learning_rate)
     loss_history: list[float] = []

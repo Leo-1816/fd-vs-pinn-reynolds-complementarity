@@ -15,4 +15,5 @@ pas, sur des cas dont on connaît la solution exacte.
    :numbered:
 
    premiers_reseaux/index
+   probleme_physique/index
    bibliographie

@@ -36,4 +36,4 @@ dimensionnelles).
    contact_lubrifie
    equations
    solution_analytique
-   demarche
+

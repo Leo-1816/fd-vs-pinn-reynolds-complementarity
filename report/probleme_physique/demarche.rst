@@ -29,8 +29,7 @@ continue, que l'on peut évaluer en tout point.
 Les étapes
 ----------
 
-Chaque étape ajoute traitée et validée sur la
-solution analytique avant de passer à la suivante :
+
 
 .. list-table::
    :header-rows: 1
@@ -61,10 +60,6 @@ Une fois les deux méthodes validées, on les comparera entre-elles sur :
 - le **temps de calcul**, à précision comparable ;
 - la **robustesse** : le résultat change-t-il d'un tirage aléatoire à l'autre
   pour le PINN, d'un maillage à l'autre pour les FD ?
-- la **sensibilité aux réglages** : nombre de points, architecture du réseau,
-  pondération des termes de la perte ;
-- le **traitement des frontières** : position de la frontière de cavitation et
-  du ménisque d'entrée, et capacité à représenter la discontinuité de
-  :math:`\theta` en :math:`X_a`.
+
 
 

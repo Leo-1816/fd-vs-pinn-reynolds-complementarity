@@ -20,7 +20,7 @@ build-backend = "uv_build"
 pythonpath = ["src"]
 
 [tool.uv.build-backend]
-module-name = ["pri", "pinn", "analytical_solution"]
+module-name = ["pri", "pinn", "analytical_solution", "fd"]
 
 [dependency-groups]
 dev = [

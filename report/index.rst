@@ -72,4 +72,5 @@ Les étapes
 
    premiers_reseaux/index
    probleme_physique/index
+   differences_finies/index
    bibliographie

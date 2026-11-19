@@ -15,8 +15,8 @@ On résout l'équation de Reynolds :eq:`eq-reynolds` sur un intervalle
    = \frac{\mathrm{d}H}{\mathrm{d}X},
    \qquad P(X_{in}) = P(X_{out}) = 0 .
 
-Le film est supposé plein partout (:math:`\theta = 0`) : il n'y a ni
-cavitation ni sous-alimentation, et :math:`P` est la seule inconnue.
+Le film est supposé plein partout (:math:`\theta = 0`) et :math:`P` est la
+seule inconnue.
 
 La discrétisation
 -----------------

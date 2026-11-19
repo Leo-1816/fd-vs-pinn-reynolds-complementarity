@@ -75,4 +75,5 @@ Les étapes
    premiers_reseaux/index
    probleme_physique/index
    reynolds_sans_cavitation/index
+   cas_noye/index
    bibliographie

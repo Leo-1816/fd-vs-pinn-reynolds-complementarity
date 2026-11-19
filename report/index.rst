@@ -9,6 +9,8 @@ résoudre l'équation de Reynolds avec une condition de complémentarité
 Avant d'attaquer ce problème, la première partie construit les outils pas à
 pas, sur des cas dont on connaît la solution exacte.
 
+.. _sec-demarche:
+
 La démarche du projet
 =====================
 
@@ -72,5 +74,5 @@ Les étapes
 
    premiers_reseaux/index
    probleme_physique/index
-   differences_finies/index
+   reynolds_sans_cavitation/index
    bibliographie

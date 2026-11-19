@@ -1,7 +1,7 @@
 .. _sec-fd-sans-cavitation:
 
-Reynolds 1D sans cavitation
-===========================
+Différences finies
+==================
 
 Le problème
 -----------

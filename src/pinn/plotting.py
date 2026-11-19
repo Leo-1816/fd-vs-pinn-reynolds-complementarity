@@ -81,3 +81,29 @@ def plot_network_vs_exact_solution(
 
     figure.tight_layout()
     return figure
+
+
+def plot_pinn_vs_fd_pressure(X, P_fd, P_pinn, title: str, subtitle: str) -> plt.Figure:
+    """En haut : pression FD vs PINN. En bas : écart absolu en échelle log.
+
+    X, P_fd, P_pinn : tableaux numpy de même forme (n,)."""
+    figure, (axes_pressure, axes_gap) = plt.subplots(
+        2, 1, figsize=(7, 6), sharex=True, gridspec_kw={"height_ratios": [2, 1]}
+    )
+
+    axes_pressure.plot(X, P_fd, color=COLOR_EXACT, linewidth=2, label="FD")
+    axes_pressure.plot(X, P_pinn, color=COLOR_NETWORK, linewidth=2, linestyle="--",
+                       label="PINN : P(X; w, b)")
+    axes_pressure.set_ylabel("P")
+    axes_pressure.set_title(title, loc="left")
+    axes_pressure.legend(frameon=False)
+    style_axes(axes_pressure)
+
+    axes_gap.semilogy(X, abs(P_pinn - P_fd), color=COLOR_NETWORK, linewidth=2)
+    axes_gap.set_xlabel("X")
+    axes_gap.set_ylabel("|P PINN − P FD|")
+    axes_gap.set_title(subtitle, loc="left", fontsize="medium", color=COLOR_TEXT_SECONDARY)
+    style_axes(axes_gap)
+
+    figure.tight_layout()
+    return figure

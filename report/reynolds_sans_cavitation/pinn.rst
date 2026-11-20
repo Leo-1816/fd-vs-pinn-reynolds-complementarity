@@ -3,19 +3,19 @@
 PINN
 ====
 
-Le problème est le même que pour les différences finies
-(:ref:`sec-fd-sans-cavitation`) : l'équation :eq:`eq-reynolds` sur
-:math:`[X_a, X_b]`, avec :math:`P = 0` aux deux bords. La démarche est celle
-du premier PINN (:ref:`sec-premiere-edo`), avec deux différences : l'équation
-est d'ordre 2, et il y a une condition à chaque bord.
+The problem is the same as for finite differences
+(:ref:`sec-fd-sans-cavitation`): the equation :eq:`eq-reynolds` on
+:math:`[X_a, X_b]`, with :math:`P = 0` at both ends. We follow the first PINN
+(:ref:`sec-premiere-edo`), with two differences: the equation is of second
+order, and there is one condition at each end.
 
-Le résidu
----------
+The residual
+------------
 
-Le réseau donne :math:`P(X; w, b)`. On calcule :math:`\mathrm{d}P/\mathrm{d}X`
-par autograd, on forme le débit de Poiseuille :math:`H^3\,\mathrm{d}P/\mathrm{d}X`,
-puis on le dérive une seconde fois. On garde ainsi la forme conservative de
-l'équation, sans la développer :
+The network gives :math:`P(X; w, b)`. We compute :math:`\mathrm{d}P/\mathrm{d}X`
+with autograd, we build the Poiseuille flow :math:`H^3\,\mathrm{d}P/\mathrm{d}X`,
+then we take its derivative a second time. This way we keep the conservative
+form of the equation, without expanding it:
 
 .. math::
 
@@ -25,12 +25,11 @@ l'équation, sans la développer :
 .. literalinclude:: /../src/pinn/reynolds_1d.py
    :pyobject: reynolds_residual
 
-La perte
+The loss
 --------
 
-La perte additionne la moyenne de :math:`r^2` sur les points de collocation et
-les carrés de la pression aux deux bords, multipliés par un poids
-:math:`\lambda` :
+The loss adds the mean of :math:`r^2` over the collocation points and the
+squares of the pressure at both ends, multiplied by a weight :math:`\lambda`:
 
 .. math::
 
@@ -40,14 +39,14 @@ les carrés de la pression aux deux bords, multipliés par un poids
 .. literalinclude:: /../src/pinn/reynolds_1d.py
    :pyobject: pinn_loss
 
-Le poids :math:`\lambda` équilibre les deux termes : la pression est petite
-devant le second membre :math:`\mathrm{d}H/\mathrm{d}X`, et sans poids les
-conditions aux limites sont mal respectées. L'entraînement (Adam) est
-identique à celui du premier PINN.
+The weight :math:`\lambda` balances the two terms. The pressure is small
+compared with the right-hand side :math:`\mathrm{d}H/\mathrm{d}X`. Without a
+weight, the network pays little attention to the ends, and the boundary
+conditions are poorly met. Training (Adam) is the same as for the first PINN.
 
-La validation
--------------
+Validation
+----------
 
-Comme pour les différences finies, le réseau est comparé à la pression
-analytique :eq:`eq-pression-analytique` sur des points de test distincts des
-points de collocation.
+As for finite differences, we compare the network with the analytical pressure
+:eq:`eq-pression-analytique`, at test points that differ from the collocation
+points.

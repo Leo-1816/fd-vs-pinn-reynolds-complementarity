@@ -1,16 +1,16 @@
-"""PINN pour Reynolds 1D sans cavitation (rapport, éq. 2.7) :
+"""PINN for 1D Reynolds without cavitation (report, eq. 2.7):
 
-    d/dX (H³ dP/dX) = dH/dX   sur [X_IN, X_OUT],   P(X_IN) = P(X_OUT) = 0,
-    avec H(X) = 1 + X²/2.
+    d/dX (H³ dP/dX) = dH/dX   on [X_IN, X_OUT],   P(X_IN) = P(X_OUT) = 0,
+    with H(X) = 1 + X²/2.
 
-Même démarche que first_pinn_ode.py, avec deux différences :
-- l'équation est d'ordre 2 : il faut dériver deux fois par autograd ;
-- deux conditions aux limites (une à chaque bord) au lieu d'une condition initiale.
+Same approach as first_pinn_ode.py, with two differences:
+- the equation is of second order: we take derivatives twice with autograd;
+- two boundary conditions (one at each end) instead of one initial condition.
 
-Domaine : [Xa, Xb] de la solution analytique pour HB = 1,1 (frontières imposées,
-comme pour la FD). La pression analytique sert UNIQUEMENT à vérifier.
+Domain: [Xa, Xb] of the analytical solution for HB = 1.1 (imposed boundaries,
+as for FD). The analytical pressure is ONLY used for checking.
 
-Précision : float64, pour la même raison que first_pinn_ode.py.
+Precision: float64, for the same reason as in first_pinn_ode.py.
 """
 
 import numpy as np
@@ -21,18 +21,18 @@ from analytical_solution import solution_1d as analytical
 
 DTYPE = torch.float64
 SEED = 0
-BOUNDARY_PENALTY = 10.0  # facteur multiplicatif pour la perte aux bords
+BOUNDARY_PENALTY = 10.0  # weight of the boundary terms in the loss
 
 # ---------------------------------------------------------------------------
-# 1. Le problème
+# 1. The problem
 # ---------------------------------------------------------------------------
 HB = 1.1
 _REFERENCE = analytical.solve(HB, np.array([0.0]))
 X_IN = _REFERENCE.Xa
 X_OUT = _REFERENCE.Xb
 
-SamplePoints = torch.Tensor    # colonne de X, forme (n_points, 1)
-ColumnValues = torch.Tensor    # valeurs associées, forme (n_points, 1)
+SamplePoints = torch.Tensor    # column of X values, shape (n_points, 1)
+ColumnValues = torch.Tensor    # matching values, shape (n_points, 1)
 
 
 def film_thickness(X: SamplePoints) -> ColumnValues:
@@ -41,22 +41,22 @@ def film_thickness(X: SamplePoints) -> ColumnValues:
 
 
 def exact_pressure(X: SamplePoints) -> ColumnValues:
-    """Pression analytique sur [Xa, Xb]. Pour la vérification uniquement."""
+    """Analytical pressure on [Xa, Xb]. Only used for checking."""
     P = analytical.pressure_from_outlet(X.detach().numpy(), HB)
     return torch.as_tensor(P, dtype=DTYPE)
 
 
 def make_sample_points(n_points: int) -> SamplePoints:
-    """Points réguliers sur [X_IN, X_OUT], forme (n_points, 1), avec requires_grad."""
+    """Evenly spaced points on [X_IN, X_OUT], shape (n_points, 1), with requires_grad."""
     X = torch.linspace(X_IN, X_OUT, n_points, dtype=DTYPE).reshape(-1, 1)
     return X.requires_grad_(True)
 
 
 # ---------------------------------------------------------------------------
-# 2. Le réseau
+# 2. The network
 # ---------------------------------------------------------------------------
 def make_network(hidden_width: int = 20) -> nn.Module:
-    """X -> P, deux couches cachées tanh (dérivée seconde non nulle, contrairement à ReLU)."""
+    """X -> P, two tanh hidden layers (non-zero second derivative, unlike ReLU)."""
     return nn.Sequential(
         nn.Linear(1, hidden_width),
         nn.Tanh(),
@@ -67,13 +67,13 @@ def make_network(hidden_width: int = 20) -> nn.Module:
 
 
 # ---------------------------------------------------------------------------
-# 3. Le résidu de Reynolds
+# 3. The Reynolds residual
 # ---------------------------------------------------------------------------
 def reynolds_residual(network: nn.Module, X: SamplePoints) -> ColumnValues:
-    """Renvoie r(X) = d/dX (H³ dP/dX) − dH/dX, forme (n_points, 1).
+    """Returns r(X) = d/dX (H³ dP/dX) − dH/dX, shape (n_points, 1).
 
-    Indice : calculer P, puis dP/dX par autograd, puis le flux H³ dP/dX,
-    puis sa dérivée par autograd. dH/dX peut aussi s'obtenir par autograd.
+    Steps: P, then dP/dX with autograd, then the flux H³ dP/dX, then its
+    derivative with autograd. dH/dX also comes from autograd.
     """
     P = network(X)
     dP_dX = torch.autograd.grad(P, X, grad_outputs=torch.ones_like(P), create_graph=True)[0]
@@ -86,10 +86,10 @@ def reynolds_residual(network: nn.Module, X: SamplePoints) -> ColumnValues:
 
 
 # ---------------------------------------------------------------------------
-# 4. La perte
+# 4. The loss
 # ---------------------------------------------------------------------------
 def pinn_loss(network: nn.Module, X: SamplePoints) -> torch.Tensor:
-    """Renvoie un SCALAIRE : moyenne(r²) + poids * (P(X_IN)² + P(X_OUT)²)."""
+    """Returns a SCALAR: mean(r²) + weight * (P(X_IN)² + P(X_OUT)²)."""
     residual = reynolds_residual(network, X)
     P_in = network(torch.tensor([[X_IN]], dtype=DTYPE))
     P_out = network(torch.tensor([[X_OUT]], dtype=DTYPE))
@@ -98,7 +98,7 @@ def pinn_loss(network: nn.Module, X: SamplePoints) -> torch.Tensor:
 
 
 # ---------------------------------------------------------------------------
-# 5. La boucle d'entraînement
+# 5. The training loop
 # ---------------------------------------------------------------------------
 def train(
     network: nn.Module,
@@ -106,7 +106,7 @@ def train(
     n_epochs: int = 5000,
     learning_rate: float = 1e-3,
 ) -> list[float]:
-    """Minimise pinn_loss avec Adam. Renvoie l'historique de la perte."""
+    """Minimises pinn_loss with Adam. Returns the loss history."""
     optimizer = torch.optim.Adam(network.parameters(), lr=learning_rate)
     loss_history = []
     for epoch in range(n_epochs):
@@ -121,10 +121,10 @@ def train(
 
 
 # ---------------------------------------------------------------------------
-# 6. La vérification
+# 6. The check
 # ---------------------------------------------------------------------------
 def max_error_against_exact_pressure(network: nn.Module, n_test_points: int = 201) -> float:
-    """Erreur max |P(X; w, b) − P_analytique| sur des points de test."""
+    """Max error |P(X; w, b) − P_analytical| at test points."""
     X_test = torch.linspace(X_IN, X_OUT, n_test_points, dtype=DTYPE).reshape(-1, 1)
     with torch.no_grad():
         prediction = network(X_test)
@@ -132,7 +132,7 @@ def max_error_against_exact_pressure(network: nn.Module, n_test_points: int = 20
 
 
 def pressure_and_gradient(network: nn.Module, X: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
-    """P et dP/dX (autograd) du réseau sur la grille X, en numpy (pour friction et load)."""
+    """P and dP/dX (autograd) of the network on the grid X, as numpy (for friction and load)."""
     X_column = torch.as_tensor(X, dtype=DTYPE).reshape(-1, 1).requires_grad_(True)
     P = network(X_column)
     dP_dX = torch.autograd.grad(P.sum(), X_column)[0]
@@ -141,14 +141,14 @@ def pressure_and_gradient(network: nn.Module, X: np.ndarray) -> tuple[np.ndarray
 
 def main() -> None:
     torch.manual_seed(SEED)
-    print(f"seed = {SEED}, dtype = {DTYPE}, Hb = {HB}, domaine = [{X_IN:.4f}, {X_OUT:.4f}]")
+    print(f"seed = {SEED}, dtype = {DTYPE}, Hb = {HB}, domain = [{X_IN:.4f}, {X_OUT:.4f}]")
 
     network = make_network()
     X_collocation = make_sample_points(n_points=50)
 
-    print(f"Erreur max AVANT entraînement : {max_error_against_exact_pressure(network):.3e}")
+    print(f"Max error BEFORE training: {max_error_against_exact_pressure(network):.3e}")
     train(network, X_collocation)
-    print(f"Erreur max APRÈS entraînement : {max_error_against_exact_pressure(network):.3e}")
+    print(f"Max error AFTER training: {max_error_against_exact_pressure(network):.3e}")
 
 
 if __name__ == "__main__":

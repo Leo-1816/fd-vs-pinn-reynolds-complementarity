@@ -1,4 +1,4 @@
-Bibliographie
-=============
+Bibliography
+============
 
 .. bibliography::

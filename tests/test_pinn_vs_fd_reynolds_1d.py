@@ -1,7 +1,7 @@
-"""Reynolds 1D sans cavitation : charge W et frottement F, FD et PINN vs analytique.
+"""1D Reynolds without cavitation: load W and friction F, FD and PINN vs analytical.
 
-Sur [Xa, Xb] (Hb = 1,1), la solution analytique (HDR §2.2.1) vérifie exactement
-le problème sans cavitation : elle sert de référence aux deux méthodes.
+On [Xa, Xb] (Hb = 1.1), the analytical solution (HDR §2.2.1) exactly satisfies
+the problem without cavitation: it is the reference for both methods.
 """
 
 import numpy as np
@@ -27,8 +27,8 @@ def friction(dP_dX: np.ndarray, U2: float, surface: Surface) -> float:
 
 @pytest.fixture(scope="module")
 def solutions() -> dict[str, tuple[np.ndarray, np.ndarray]]:
-    """P et dP/dX sur la grille X, pour chaque méthode."""
-    # Analytique : P de la HDR, dP/dX = (H − Hb)/H³ (débit constant)
+    """P and dP/dX on the grid X, for each method."""
+    # Analytical: P from the HDR, dP/dX = (H − Hb)/H³ (constant flow rate)
     P_exact = analytical.pressure_from_outlet(X, pinn.HB)
     dP_exact = (H - pinn.HB) / H**3
 
@@ -36,18 +36,18 @@ def solutions() -> dict[str, tuple[np.ndarray, np.ndarray]]:
     _, P_fd = fd.solve(pinn.X_IN, pinn.X_OUT, N_GRID)
     dP_fd = pressure_gradient(X, P_fd)
 
-    # PINN (seed fixée), entraîné une seule fois pour tout le fichier
+    # PINN (fixed seed), trained only once for the whole file
     torch.manual_seed(pinn.SEED)
     network = pinn.make_network()
     pinn.train(network, pinn.make_sample_points(n_points=50))
     P_pinn, dP_pinn = pinn.pressure_and_gradient(network, X)
 
-    return {"analytique": (P_exact, dP_exact), "FD": (P_fd, dP_fd), "PINN": (P_pinn, dP_pinn)}
+    return {"analytical": (P_exact, dP_exact), "FD": (P_fd, dP_fd), "PINN": (P_pinn, dP_pinn)}
 
 
 def test_analytical_load_matches_hdr_formula(solutions):
-    """Contrôle de la référence : ∫ P dX numérique = W analytique (HDR éq. 2.14)."""
-    P_exact, _ = solutions["analytique"]
+    """Check of the reference: numerical ∫ P dX = analytical W (HDR eq. 2.14)."""
+    P_exact, _ = solutions["analytical"]
     W_hdr = analytical.solve(pinn.HB, X).W
     assert load(X, P_exact) == pytest.approx(W_hdr, rel=RELATIVE_TOLERANCE)
 
@@ -61,9 +61,9 @@ def test_load_matches_analytical(solutions, method: str):
 
 @pytest.mark.parametrize("method", ["FD", "PINN"])
 @pytest.mark.parametrize("surface", ["bottom", "top"])
-@pytest.mark.parametrize("U2", [0.0, 1.0])   # roulement pur, puis glissement
+@pytest.mark.parametrize("U2", [0.0, 1.0])   # pure rolling, then sliding
 def test_friction_matches_analytical(solutions, method: str, U2: float, surface: Surface):
-    _, dP_exact = solutions["analytique"]
+    _, dP_exact = solutions["analytical"]
     _, dP = solutions[method]
     assert friction(dP, U2, surface) == pytest.approx(friction(dP_exact, U2, surface),
                                                       rel=RELATIVE_TOLERANCE)

@@ -1,54 +1,52 @@
 .. _sec-solution-analytique:
 
-La solution analytique 1D
-=========================
+The 1D analytical solution
+==========================
 
-En 1D, le problème de :ref:`sec-equations` possède une solution **exacte**,
-donnée par :cite:t:`biboulet2020hdr` (section 2.2.1). C'est elle qui servira
-de **référence** pour valider la méthode des différences finies puis le PINN.
-Avant de comparer les deux méthodes entre elles, chacune doit retrouver cette
-solution.
+In 1D, the problem of :ref:`sec-equations` has an **exact** solution, given by
+:cite:t:`biboulet2020hdr` (section 2.2.1). It will be the **reference** to
+validate the finite difference method and then the PINN. Before we compare the
+two methods with each other, each one must find this solution.
 
+Idea: integrate the Reynolds equation once
+------------------------------------------
 
-Idée : intégrer une fois l'équation de Reynolds
------------------------------------------------
-
-Dans la zone sous pression, :math:`X_a < X < X_b`, le film est plein
-(:math:`\theta = 0`) et le débit constant :eq:`eq-debit-constant` s'écrit
-:math:`H - H^3 \, \mathrm{d}P/\mathrm{d}X = H_b`. Le gradient de pression est
-donc connu explicitement :
+In the pressurised zone, :math:`X_a < X < X_b`, the film is full
+(:math:`\theta = 0`) and the constant flow rate :eq:`eq-debit-constant` reads
+:math:`H - H^3 \, \mathrm{d}P/\mathrm{d}X = H_b`. So we know the pressure
+gradient explicitly:
 
 .. math::
    :label: eq-gradient-pression
 
    \frac{\mathrm{d}P}{\mathrm{d}X} = \frac{H - H_b}{H^3} .
 
-Cette formule se lit facilement :
+This formula is easy to read:
 
-- là où :math:`H > H_b`, c'est-à-dire en amont de :math:`-X_b`, la pression
-  **augmente** : l'huile entraînée dans le convergent est comprimée ;
-- là où :math:`H < H_b`, entre :math:`-X_b` et :math:`X_b`, la pression
-  **diminue** ;
-- la pression est donc **maximale** en :math:`-X_b`, et le gradient est de
-  nouveau **nul en** :math:`X_b`, où :math:`H(X_b) = H_b`. C'est la condition dite de
-  Reynolds à la frontière de cavitation : la pression y arrive à zéro « en
-  douceur », avec une tangente horizontale.
+- where :math:`H > H_b`, that is, upstream of :math:`-X_b`, the pressure
+  **rises**: the oil dragged into the narrowing gap is squeezed;
+- where :math:`H < H_b`, between :math:`-X_b` and :math:`X_b`, the pressure
+  **falls**;
+- so the pressure is **highest** at :math:`-X_b`, and the gradient is **zero
+  again at** :math:`X_b`, where :math:`H(X_b) = H_b`. This is called the
+  Reynolds condition at the cavitation boundary: the pressure reaches zero
+  "smoothly", with a horizontal tangent.
 
-Comme :math:`H(X) = 1 + X^2/2`, la condition :math:`H(X_b) = H_b` donne la position
-de la frontière de cavitation :
+Since :math:`H(X) = 1 + X^2/2`, the condition :math:`H(X_b) = H_b` gives the
+position of the cavitation boundary:
 
 .. math::
    :label: eq-xb
 
    X_b = \sqrt{2\, (H_b - 1)} .
 
-La pression
------------
+The pressure
+------------
 
-Il reste à intégrer :eq:`eq-gradient-pression`. Le calcul est plus simple avec
-la variable auxiliaire :math:`Y = X / \sqrt{2}`, pour laquelle
-:math:`H = 1 + Y^2`. En posant :math:`Z = Y / H`, une primitive du gradient de
-pression est
+We still have to integrate :eq:`eq-gradient-pression`. The calculation is
+simpler with the auxiliary variable :math:`Y = X / \sqrt{2}`, for which
+:math:`H = 1 + Y^2`. With :math:`Z = Y / H`, an antiderivative of the pressure
+gradient is
 
 .. math::
    :label: eq-primitive-pression
@@ -58,9 +56,9 @@ pression est
    - \frac{Z}{4} \frac{H_b}{H}
    \right] .
 
-La pression doit s'annuler en :math:`X_b`, c'est-à-dire en
-:math:`Y_b = \sqrt{H_b - 1}`. On soustrait donc la valeur de la primitive en ce
-point :
+The pressure must be zero at :math:`X_b`, that is, at
+:math:`Y_b = \sqrt{H_b - 1}`. So we subtract the value of the antiderivative at
+this point:
 
 .. math::
    :label: eq-pression-analytique
@@ -68,61 +66,58 @@ point :
    P(X) = P_d\!\left( \tfrac{X}{\sqrt{2}} \right) - P_d(Y_b),
    \qquad X_a \leq X \leq X_b .
 
-En dehors de :math:`[X_a, X_b]`, :math:`P = 0`.
+Outside :math:`[X_a, X_b]`, :math:`P = 0`.
 
-La fraction de vide
--------------------
+The void fraction
+-----------------
 
-En dehors de la zone sous pression, :math:`P = 0`, et le débit constant
-:eq:`eq-debit-constant` donne directement la fraction de vide :
+Outside the pressurised zone, :math:`P = 0`, and the constant flow rate
+:eq:`eq-debit-constant` directly gives the void fraction:
 
 .. math::
    :label: eq-theta-analytique
 
    \theta(X) =
    \begin{cases}
-     1 - \dfrac{H_b}{H(X)} & \text{si } X < X_a \text{ ou } X > X_b, \\[2mm]
-     0 & \text{si } X_a \leq X \leq X_b .
+     1 - \dfrac{H_b}{H(X)} & \text{if } X < X_a \text{ or } X > X_b, \\[2mm]
+     0 & \text{if } X_a \leq X \leq X_b .
    \end{cases}
 
-Cette solution a deux propriétés caractéristiques, qu'il faudra retrouver
-numériquement :
+This solution has two typical properties, which the numerical methods must
+reproduce:
 
-- en :math:`X_b`, :math:`H = H_b` donc :math:`\theta` vaut 0 des deux côtés :
-  la fraction de vide est **continue** à la frontière de cavitation ;
-- en :math:`X_a`, :math:`\theta` passe brusquement de
-  :math:`1 - H_b / H(X_a)` à 0 : la fraction de vide est **discontinue** au
-  ménisque d'entrée, où l'huile remplit d'un coup l'espace entre les surfaces.
-  La pression, elle, y est continue mais son gradient ne s'annule pas.
+- at :math:`X_b`, :math:`H = H_b`, so :math:`\theta` is 0 on both sides: the
+  void fraction is **continuous** at the cavitation boundary;
+- at :math:`X_a`, :math:`\theta` jumps suddenly from :math:`1 - H_b / H(X_a)`
+  to 0: the void fraction is **discontinuous** at the inlet meniscus, where the
+  oil suddenly fills the gap between the surfaces. The pressure is continuous
+  there, but its gradient is not zero.
 
+The inlet meniscus and the amount of oil
+----------------------------------------
 
-
-Le ménisque d'entrée et la quantité d'huile
--------------------------------------------
-
-La pression :eq:`eq-pression-analytique` dépend du paramètre :math:`H_b`, égal à
-la quantité d'huile disponible :math:`H_{\text{oil}}`. Le ménisque d'entrée
-:math:`X_a` est la position **en amont** (:math:`X_a < 0`) où la pression
-s'annule :
+The pressure :eq:`eq-pression-analytique` depends on the parameter
+:math:`H_b`, equal to the amount of available oil :math:`H_{\text{oil}}`. The
+inlet meniscus :math:`X_a` is the position **upstream** (:math:`X_a < 0`)
+where the pressure becomes zero:
 
 .. math::
    :label: eq-xa
 
    P(X_a) = 0 .
 
-Cette équation n'a pas de solution explicite. On la résout par la méthode de
-Newton, en utilisant :eq:`eq-gradient-pression` comme dérivée : une dizaine
-d'itérations suffisent à atteindre la précision machine
-:cite:p:`biboulet2020hdr`.
+This equation has no explicit solution. We solve it with Newton's method,
+using :eq:`eq-gradient-pression` as the derivative: about ten iterations are
+enough to reach machine precision :cite:p:`biboulet2020hdr`.
 
-On peut aussi procéder dans l'autre sens : imposer :math:`X_a` et chercher le
-:math:`H_b` correspondant, toujours par Newton sur :math:`P(X_a) = 0`.
+We can also go the other way: impose :math:`X_a` and look for the matching
+:math:`H_b`, again with Newton on :math:`P(X_a) = 0`.
 
-La charge
----------
+The load
+--------
 
-La charge s'obtient en intégrant la pression. :cite:t:`biboulet2020hdr` en
-donne une primitive :
+We get the load by integrating the pressure. :cite:t:`biboulet2020hdr` gives an
+antiderivative:
 
 .. math::
    :label: eq-charge-analytique
@@ -134,64 +129,60 @@ donne une primitive :
    \qquad
    W = W_d(Y_b) - W_d(Y_a),
 
-avec :math:`Y_a = X_a / \sqrt{2}`.
+with :math:`Y_a = X_a / \sqrt{2}`.
 
-Le cas noyé et les valeurs de référence
----------------------------------------
+The flooded case and the reference values
+-----------------------------------------
 
-Quand la quantité d'huile augmente, le ménisque d'entrée recule vers l'amont.
-Dans la limite :math:`X_a \to -\infty`, le contact est **noyé** : la condition
-:math:`P(-\infty) = 0` fixe la valeur maximale de :math:`H_b`. Les valeurs de
-référence données par :cite:t:`biboulet2020hdr` sont :
+When the amount of oil increases, the inlet meniscus moves upstream. In the
+limit :math:`X_a \to -\infty`, the contact is **flooded**: the condition
+:math:`P(-\infty) = 0` sets the largest possible value of :math:`H_b`. The
+reference values given by :cite:t:`biboulet2020hdr` are:
 
-.. list-table:: Valeurs de référence (cas noyé)
+.. list-table:: Reference values (flooded case)
    :header-rows: 1
    :widths: 50 50
 
-   * - Grandeur
-     - Valeur
-   * - Épaisseur en sortie :math:`H_{b,ff}`
-     - :math:`\approx 1{,}226`
-   * - Charge :math:`W_{ff}`
-     - :math:`\approx 0{,}408`
+   * - Quantity
+     - Value
+   * - Outlet thickness :math:`H_{b,ff}`
+     - :math:`\approx 1.226`
+   * - Load :math:`W_{ff}`
+     - :math:`\approx 0.408`
 
-Pour le cas sous-alimenté, la HDR donne la correspondance suivante entre la
-position du ménisque d'entrée et l'épaisseur en sortie :
+For the starved case, the HDR gives the following link between the position
+of the inlet meniscus and the outlet thickness:
 
-.. list-table:: Correspondance :math:`X_a \leftrightarrow H_b` (HDR, figure 2.3)
+.. list-table:: Link :math:`X_a \leftrightarrow H_b` (HDR, figure 2.3)
    :header-rows: 1
 
    * - :math:`X_a`
      - :math:`-\infty`
      - :math:`-3`
      - :math:`-2`
-     - :math:`-1{,}5`
+     - :math:`-1.5`
      - :math:`-1`
-     - :math:`-0{,}75`
-     - :math:`-0{,}5`
+     - :math:`-0.75`
+     - :math:`-0.5`
    * - :math:`H_b`
-     - 1,226
-     - 1,201
-     - 1,169
-     - 1,136
-     - 1,085
-     - 1,053
-     - 1,028
+     - 1.226
+     - 1.201
+     - 1.169
+     - 1.136
+     - 1.085
+     - 1.053
+     - 1.028
 
+These values give a first simple test for any code: find :math:`H_{b,ff}` and
+:math:`W_{ff}`, then the table above.
 
+How the solution will be used to validate the methods
+-----------------------------------------------------
 
-Ces valeurs donnent un premier test simple pour tout code : retrouver
-:math:`H_{b,ff}` et :math:`W_{ff}`, puis le tableau de correspondance.
+For a given amount of oil, the analytical solution gives :math:`P(X)`,
+:math:`\theta(X)`, :math:`X_a`, :math:`X_b` and :math:`W`. For each numerical
+method, we will measure:
 
-Comment la solution servira à valider les méthodes
---------------------------------------------------
-
-Pour une quantité d'huile donnée, la solution analytique fournit :
-:math:`P(X)`, :math:`\theta(X)`, :math:`X_a`, :math:`X_b` et :math:`W`. Pour
-chaque méthode numérique, on mesurera :
-
-- l'**erreur sur la pression** et sur la **fraction de vide**, en tout point ;
-- l'**erreur sur la position des frontières** :math:`X_a` et :math:`X_b` ;
-- l'**erreur sur la charge** :math:`W`.
-
-
+- the **error on the pressure** and on the **void fraction**, at every point;
+- the **error on the position of the boundaries** :math:`X_a` and :math:`X_b`;
+- the **error on the load** :math:`W`.

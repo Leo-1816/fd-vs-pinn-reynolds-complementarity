@@ -1,6 +1,6 @@
-"""Cas noyé : schéma des zones (film plein / cavitation) et du résidu r, solution FD.
+"""Flooded case: diagram of the zones (full film / cavitation) and of the residual r, FD solution.
 
-Lancer : uv run python figures/flooded_zones.py
+Run: uv run python figures/flooded_zones.py
 """
 
 import matplotlib.pyplot as plt

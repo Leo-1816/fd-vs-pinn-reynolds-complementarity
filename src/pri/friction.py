@@ -1,22 +1,22 @@
-"""Frottement à partir de la pression (post-traitement commun FD et PINN).
+"""Friction from the pressure (post-processing shared by FD and PINN).
 
-Profil de vitesse de Reynolds intégré dans l'épaisseur, puis τ = η ∂u/∂z aux parois.
-Forme adimensionnée (τ en unités de η um / h0) :
+Reynolds velocity profile across the thickness, then τ = η ∂u/∂z at the walls.
+Dimensionless form (τ in units of η um / h0):
 
-    τ = (U2 − U1) / H  ∓  6 H dP/dX   (− : surface du bas z = 0, + : surface du haut z = h)
+    τ = (U2 − U1) / H  ∓  6 H dP/dX   (−: bottom surface z = 0, +: top surface z = h)
 
-    U1, U2 : vitesses des surfaces du bas et du haut, adimensionnées par um
-    (U2 − U1 = 0 : roulement pur)
+    U1, U2: velocities of the bottom and top surfaces, divided by um
+    (U2 − U1 = 0: pure rolling)
 
-Signe : τ = η ∂u/∂z est la contrainte dans le fluide. La force exercée sur la
-surface du bas vaut +τ(0), celle sur la surface du haut vaut −τ(h).
+Sign: τ = η ∂u/∂z is the stress in the fluid. The force on the bottom surface
+is +τ(0), the force on the top surface is −τ(h).
 
-Frottement par unité de largeur, adimensionné (en unités de η um √(Rx/h0)) :
+Friction per unit width, dimensionless (in units of η um √(Rx/h0)):
 
     F = ∫ τ dX
 
-Film plein supposé (θ = 0) : pas encore de cavitation.
-Entrées en numpy : pour le PINN, convertir avec .detach().numpy().
+Full film assumed (θ = 0): no cavitation yet.
+Inputs are numpy arrays: for the PINN, convert with .detach().numpy().
 """
 
 from typing import Literal
@@ -24,33 +24,30 @@ from typing import Literal
 import numpy as np
 from numpy.typing import NDArray
 
-Positions = NDArray[np.float64]      # abscisses X, forme (n,)
-ColumnValues = NDArray[np.float64]   # valeurs aux points X, forme (n,)
+Positions = NDArray[np.float64]      # positions X, shape (n,)
+ColumnValues = NDArray[np.float64]   # values at the points X, shape (n,)
 Surface = Literal["bottom", "top"]
 
 
 def shear_stress_1D(H: ColumnValues, dP_dX: ColumnValues, U1: float,
                     U2: float, surface: Surface) -> ColumnValues:
-    """τ(X) sur la surface choisie : Couette (U2 − U1)/H et Poiseuille ∓ 6 H dP/dX.
+    """τ(X) on the chosen surface: Couette (U2 − U1)/H and Poiseuille ∓ 6 H dP/dX.
 
-    Entrées : H(X), dP/dX(X), U1, U2 (vitesses aux surfaces z = 0 et z = h).
+    Inputs: H(X), dP/dX(X), U1, U2 (velocities of the surfaces z = 0 and z = h).
     """
     z = 0.0 if surface == "bottom" else H
     return 6.0 * (2.0 * z - H) * dP_dX + (U2 - U1) / H
 
 
 def friction_force(X: Positions, tau: ColumnValues) -> float:
-    """F = ∫ τ dX sur la grille X.
-
-    """
+    """F = ∫ τ dX on the grid X."""
     return float(np.trapezoid(tau, X))
 
 
 def pressure_gradient(X: Positions, P: ColumnValues) -> ColumnValues:
-    """dP/dX à partir des valeurs de P sur la grille (pour la FD).
+    """dP/dX from the values of P on the grid (for FD).
 
-    Pour le PINN, dP/dX vient directement d'autograd : cette fonction est inutile.
-
+    For the PINN, dP/dX comes directly from autograd: this function is not needed.
     """
     dP_dX = np.gradient(P, X)
     return dP_dX

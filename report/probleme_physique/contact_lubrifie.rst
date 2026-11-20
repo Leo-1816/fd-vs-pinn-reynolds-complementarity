@@ -1,162 +1,159 @@
 .. _sec-contact-lubrifie:
 
-Le contact lubrifié
-===================
+The lubricated contact
+======================
 
-La situation physique
----------------------
+The physical situation
+----------------------
 
-Dans un roulement, entre un piston et un cylindre, ou dans un engrenage, deux
-pièces roulent ou glissent l'une sur l'autre. Dans cette étude au moins une des 
-surfaces est en mouvement. Pour éviter qu'elles se touchent
-et s'usent, on intercale un lubrifiant, ici de l'huile. Si le mouvement est
-assez rapide, l'huile entraînée par les surfaces forme un **film** continu qui
-les sépare complètement : on parle de **lubrification hydrodynamique**. 
+In a rolling bearing, between a piston and a cylinder, or in a gear, two parts
+roll or slide on each other. In this study, at least one of the surfaces is
+moving. To stop them from touching and wearing out, we put a lubricant between
+them, here oil. If the motion is fast enough, the oil dragged along by the
+surfaces forms a continuous **film** that separates them completely. This is
+called **hydrodynamic lubrication**.
 
-Ce film est extrêmement mince en comparaison aux pièces autour et sera porté par 
-la direction :math:`y` dans ce projet. 
-Il est pourtant capable de porter des charges importantes. 
-Le mécanisme est le suivant :
+This film is extremely thin compared with the parts around it. In this
+project, its thickness is along the :math:`y` direction. Yet it can carry large
+loads. Here is how:
 
-- au voisinage du contact, l'écart entre les deux surfaces a la forme d'un
-  **convergent** (l'écart diminue), puis d'un **divergent** (l'écart augmente) ;
-- les surfaces en mouvement **entraînent** l'huile vers le convergent, comme un
-  tapis roulant ;
-- l'huile, forcée de passer dans un espace qui se rétrécit, ne peut pas
-  s'écouler assez vite : sa **pression monte**. C'est cette surpression qui
-  maintient les surfaces écartées et porte la charge.
+- near the contact, the gap between the two surfaces first **narrows**
+  (converging part), then **widens** (diverging part);
+- the moving surfaces **drag** the oil into the narrowing gap, like a conveyor
+  belt;
+- the oil is forced into a space that gets smaller, and it cannot flow away
+  fast enough: its **pressure rises**. This extra pressure keeps the surfaces
+  apart and carries the load.
 
-.. note:: Image simple
+.. note:: A simple picture
 
-   C'est le même phénomène que l'aquaplaning : une voiture roulant vite sur une
-   route mouillée entraîne l'eau sous le pneu. L'eau ne s'échappe pas assez vite,
-   sa pression monte et soulève le pneu.
+   This is the same effect as aquaplaning. A car driving fast on a wet road
+   drags water under the tyre. The water cannot escape fast enough, so its
+   pressure rises and lifts the tyre.
 
-La géométrie
+The geometry
 ------------
 
-Le cas 1D : le contact d'un rouleau
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 1D case: a roller contact
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-On considère la situation la plus simple : une surface plane et une surface
-courbe de rayon :math:`R_x`, par exemple un rouleau sur une piste 
-(il n'y a pas de déplacement dans le sens de l'axe du rouleau). Près du
-point le plus proche, l'écart entre les surfaces, appelé **épaisseur de film**,
-est bien approché par une parabole :
+We take the simplest situation: a flat surface and a curved surface of radius
+:math:`R_x`, for example a roller on a track (nothing moves along the roller
+axis). Near the closest point, the gap between the surfaces, called the **film
+thickness**, is well approximated by a parabola:
 
 .. math::
    :label: eq-geometrie-dimensionnelle
 
    h(x) = h_0 + \frac{x^2}{2 R_x},
 
-où :math:`x` est la position le long de la direction du mouvement et
-:math:`h_0` l'épaisseur minimale, atteinte en :math:`x = 0`. Pour
-:math:`x < 0`, le film est convergent, pour :math:`x > 0` il est divergent.
+where :math:`x` is the position along the direction of motion and :math:`h_0`
+is the minimum thickness, reached at :math:`x = 0`. For :math:`x < 0`, the film
+narrows (converging). For :math:`x > 0`, it widens (diverging).
 
-Les surfaces se déplacent avec une vitesse moyenne :math:`u_m`, qui est la
-vitesse à laquelle l'huile est entraînée dans le contact.
+The surfaces move with a mean velocity :math:`u_m`. This is the speed at which
+the oil is dragged into the contact.
 
-Le cas 2D : le contact elliptique
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 2D case: the elliptical contact
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Le cas 1D suppose que le rouleau est infiniment long : rien ne varie le long
-de son axe. En réalité, les surfaces sont souvent courbées dans les **deux**
-directions, comme une bille ou un rouleau bombé sur une piste. On ajoute alors
-la direction :math:`z`, perpendiculaire au mouvement, avec un second rayon de
-courbure :math:`R_z`. L'épaisseur de film devient un paraboloïde
-:cite:p:`biboulet2020hdr` :
+The 1D case assumes that the roller is infinitely long: nothing changes along
+its axis. In reality, the surfaces are often curved in **both** directions,
+like a ball or a crowned roller on a track. We then add the direction
+:math:`z`, perpendicular to the motion, with a second radius of curvature
+:math:`R_z`. The film thickness becomes a paraboloid
+:cite:p:`biboulet2020hdr`:
 
 .. math::
    :label: eq-geometrie-dimensionnelle-2d
 
    h(x, z) = h_0 + \frac{x^2}{2 R_x} + \frac{z^2}{2 R_z} .
 
-Les lignes de même épaisseur sont des **ellipses** : on parle de **contact
-elliptique**. Sa forme est caractérisée par le rapport des rayons
+The lines of equal thickness are **ellipses**: this is called an **elliptical
+contact**. Its shape is set by the ratio of the radii
 
 .. math::
 
    D = \frac{R_x}{R_z} .
 
-- :math:`D = 1` : les deux rayons sont égaux, le contact est circulaire (une
-  bille sur un plan) ;
-- :math:`D \to 0` : :math:`R_z` devient infini, la surface n'est plus courbée
-  selon :math:`z`, et on retrouve le **cas 1D** (contact linéique). Le 1D est
-  donc la limite d'un contact infiniment large.
+- :math:`D = 1`: the two radii are equal and the contact is circular (a ball on
+  a plane);
+- :math:`D \to 0`: :math:`R_z` becomes infinite, the surface is no longer
+  curved along :math:`z`, and we get back the **1D case** (line contact). So 1D
+  is the limit of an infinitely wide contact.
 
-La différence physique essentielle est la **fuite latérale** : en 2D, une
-partie de l'huile entraînée dans le contact s'échappe sur les côtés, dans la
-direction :math:`z`, au lieu de traverser le contact. La quantité d'huile n'est
-plus la même à l'entrée et à la sortie, et la zone sous pression devient une
-région du plan, délimitée par des frontières courbes.
+The key physical difference is **side leakage**. In 2D, part of the oil
+dragged into the contact escapes sideways, in the :math:`z` direction, instead
+of going through the contact. The amount of oil is no longer the same at the
+inlet and at the outlet. The pressurised zone becomes a region of the plane,
+bounded by curved boundaries.
 
-Les hypothèses générales du problème complet
----------------------------------------------------
+The general assumptions of the full problem
+-------------------------------------------
 
-Le projet se place dans le régime le plus simple, dit **iso-visqueux rigide**
-(IVR) :
+The project uses the simplest regime, called **iso-viscous rigid** (IVR):
 
-- **iso-visqueux** : la viscosité :math:`\eta_0` de l'huile est constante. En
-  réalité, elle augmente avec la pression, mais on néglige cet effet
-- **rigide** : les surfaces ne se déforment pas sous la pression. La géométrie
-  :eq:`eq-geometrie-dimensionnelle` est donc connue à l'avance et ne dépend pas
-  de la solution
+- **iso-viscous**: the oil viscosity :math:`\eta_0` is constant. In reality, it
+  increases with pressure, but we neglect this effect;
+- **rigid**: the surfaces do not deform under pressure. So the geometry
+  :eq:`eq-geometrie-dimensionnelle` is known in advance and does not depend on
+  the solution.
 
-S'y ajoutent les hypothèses classiques de la lubrification en film mince :
+We add the classical assumptions of thin-film lubrication:
 
-- le film est **mince** devant les autres dimensions du contact
-- l'huile est un **fluide newtonien** et **incompressible**, et l'écoulement est
-  **laminaire** : les forces visqueuses dominent et l'inertie est négligeable 
-- la pression est **constante dans l'épaisseur** du film 
-- l'huile **adhère** aux parois (pas de glissement à la paroi) 
-- le régime est **stationnaire** et **isotherme** 
-- en 1D, le contact est **infiniment large** dans la direction perpendiculaire
-  au mouvement : l'huile ne peut pas s'échapper sur les côtés.
+- the film is **thin** compared with the other dimensions of the contact;
+- the oil is a **Newtonian** and **incompressible** fluid, and the flow is
+  **laminar**: viscous forces dominate and inertia is negligible;
+- the pressure is **constant across the thickness** of the film;
+- the oil **sticks** to the walls (no slip at the wall);
+- the regime is **steady** and **isothermal**;
+- in 1D, the contact is **infinitely wide** in the direction perpendicular to
+  the motion: the oil cannot escape sideways.
 
-Les deux phénomènes qui compliquent le problème
------------------------------------------------
+The two effects that make the problem harder
+--------------------------------------------
 
-La cavitation
-~~~~~~~~~~~~~
+Cavitation
+~~~~~~~~~~
 
-Dans le divergent, l'écart entre les surfaces augmente. L'équation qui décrit
-le film (:ref:`sec-equations`) y prédit une **dépression**. La pression est donc 
-**inférieure** à la pression ambiante, et la solution peut même être négative.
-Un liquide ne supporte pas une telle dépression :
-le film se **rompt**, des poches de gaz ou de vapeur apparaissent, et l'huile ne
-remplit plus tout l'espace entre les surfaces. C'est la **cavitation**.
+In the diverging part, the gap between the surfaces grows. There, the
+equation that describes the film (:ref:`sec-equations`) predicts a **pressure
+drop**. The pressure becomes **lower** than the ambient pressure, and the
+solution can even be negative. A liquid cannot withstand such a drop: the film
+**breaks up**, pockets of gas or vapour appear, and the oil no longer fills the
+whole space between the surfaces. This is **cavitation**.
 
-Dans une zone cavitée :
+In a cavitated zone:
 
-- la pression reste égale à la **pression de cavitation**, que l'on prend comme
-  référence : :math:`p = 0` ;
-- l'espace entre les surfaces n'est que **partiellement** rempli d'huile. On
-  note :math:`\theta` la **fraction de vide** : :math:`\theta = 0` si le film est
-  plein, :math:`\theta = 0{,}3` si 30 % de l'épaisseur est occupée par du gaz.
+- the pressure stays equal to the **cavitation pressure**, which we take as the
+  reference: :math:`p = 0`;
+- the space between the surfaces is only **partly** filled with oil. We write
+  :math:`\theta` for the **void fraction**: :math:`\theta = 0` if the film is
+  full, :math:`\theta = 0.3` if gas fills 30 % of the thickness.
 
-La frontière entre zone pleine et zone cavitée n'est pas connue à l'avance :
-elle fait partie de la solution. C'est une **frontière libre**, et c'est la
-principale difficulté numérique du problème.
+The boundary between the full zone and the cavitated zone is not known in
+advance: it is part of the solution. It is a **free boundary**, and it is the
+main numerical difficulty of the problem.
 
-L'alimentation limitée
-~~~~~~~~~~~~~~~~~~~~~~
+Limited oil supply
+~~~~~~~~~~~~~~~~~~
 
-Le cas « idéal » suppose qu'il y a de l'huile en abondance devant le contact :
-le contact est dit **noyé**. Souvent, ce n'est pas le cas : les surfaces
-n'apportent qu'une **couche d'huile d'épaisseur finie** :math:`h_{\text{oil}}`.
-Le contact est alors **sous-alimenté**.
+The "ideal" case assumes there is plenty of oil in front of the contact: the
+contact is called **flooded**. Often this is not true: the surfaces only bring
+an **oil layer of finite thickness** :math:`h_{\text{oil}}`. The contact is
+then **starved**.
 
-Conséquence : le film ne devient plein qu'à partir d'une certaine position
-:math:`x_a`, appelée **ménisque d'entrée**, là où l'écart entre les surfaces
-devient égal à l'épaisseur d'huile disponible. En amont, l'espace est
-partiellement vide. Moins il y a d'huile, plus le ménisque d'entrée se
-rapproche du centre du contact, plus la zone sous pression rétrécit, et plus
-la charge que le contact peut porter diminue.
+The consequence: the film only becomes full from a certain position
+:math:`x_a`, called the **inlet meniscus**. This is where the gap between the
+surfaces becomes equal to the available oil thickness. Upstream of it, the
+space is partly empty. The less oil there is, the closer the inlet meniscus
+moves to the centre of the contact, the smaller the pressurised zone, and the
+lower the load the contact can carry.
 
-Ce que l'on cherche
--------------------
+What we are looking for
+-----------------------
 
-Le contact présente donc, de l'amont vers l'aval, trois zones :
+So the contact has three zones, from upstream to downstream:
 
 .. list-table::
    :header-rows: 1
@@ -164,28 +161,28 @@ Le contact présente donc, de l'amont vers l'aval, trois zones :
 
    * - Zone
      - Film
-     - Pression
-     - Fraction de vide
-   * - avant le ménisque d'entrée :math:`x_a`
-     - partiellement rempli
+     - Pressure
+     - Void fraction
+   * - before the inlet meniscus :math:`x_a`
+     - partly filled
      - :math:`p = 0`
      - :math:`\theta > 0`
-   * - entre :math:`x_a` et :math:`x_b`
-     - plein
+   * - between :math:`x_a` and :math:`x_b`
+     - full
      - :math:`p > 0`
      - :math:`\theta = 0`
-   * - après la frontière de cavitation :math:`x_b`
-     - partiellement rempli (cavitation)
+   * - after the cavitation boundary :math:`x_b`
+     - partly filled (cavitation)
      - :math:`p = 0`
      - :math:`\theta > 0`
 
-Résoudre le problème, c'est trouver, pour une quantité d'huile disponible
-donnée la **pression** :math:`p(x)` et la **fraction de vide** :math:`\theta(x)` en
-tout point.
+Solving the problem means finding, for a given amount of available oil, the
+**pressure** :math:`p(x)` and the **void fraction** :math:`\theta(x)` at every
+point.
 
-On pourra ensuite calculer :
+Then we can compute:
 
-- les positions des deux frontières : le **ménisque d'entrée** :math:`x_a` et la
-  **frontière de cavitation** :math:`x_b` ;
-- la **charge** :math:`w` que le contact peut porter, égale à l'intégrale de la
-  pression.
+- the positions of the two boundaries: the **inlet meniscus** :math:`x_a` and
+  the **cavitation boundary** :math:`x_b`;
+- the **load** :math:`w` the contact can carry, equal to the integral of the
+  pressure.

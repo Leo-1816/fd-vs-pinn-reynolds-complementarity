@@ -1,72 +1,74 @@
-FD vs PINN : équation de Reynolds avec complémentarité
+FD vs PINN: the Reynolds equation with complementarity
 ======================================================
 
-Ce rapport compare une méthode de différences finies (FD), qui sert de
-référence, et un réseau de neurones informé par la physique (PINN) pour
-résoudre l'équation de Reynolds avec une condition de complémentarité
-(cavitation, alimentation limitée).
+This report compares two ways to solve the Reynolds equation with a
+complementarity condition (cavitation, limited oil supply):
 
-Avant d'attaquer ce problème, la première partie construit les outils pas à
-pas, sur des cas dont on connaît la solution exacte.
+- a **finite difference** method (FD), which is the reference;
+- a **physics-informed neural network** (PINN).
+
+Before we tackle this problem, the first part builds the tools step by step.
+Each tool is tested on a case where we know the exact solution.
 
 .. _sec-demarche:
 
-La démarche du projet
+How the project works
 =====================
 
-L'objectif est de comparer deux façons de résoudre le problème de
-:ref:`sec-equations` : une méthode classique, les **différences finies**, qui
-sert de référence, et un **PINN**, dont on veut évaluer l'intérêt.
+The goal is to compare two ways to solve the problem of :ref:`sec-equations`.
+The first one is a classical method, **finite differences**. It is the
+reference. The second one is a **PINN**. We want to find out what it is worth.
 
-Les deux méthodes
------------------
+The two methods
+---------------
 
-**Différences finies (FD).** On découpe le domaine en points régulièrement
-espacés, et on remplace les dérivées par des différences entre points voisins.
-Les deux équations :eq:`eq-reynolds-theta` et :eq:`eq-fischer-burmeister`
-deviennent un système d'équations non linéaires, résolu par la méthode de
-Newton. Suivant :cite:t:`biboulet2020hdr` (section 3.3.3), on utilisera une
-seule inconnue combinée :math:`u = P - \theta` : comme :math:`P` et
-:math:`\theta` ne sont jamais positifs en même temps, :math:`P` est la partie
-positive de :math:`u` et :math:`\theta` sa partie négative. On obtient une
-solution aux points du maillage, dont la précision s'améliore quand on raffine.
+**Finite differences (FD).** We cut the domain into evenly spaced points. We
+replace each derivative by a difference between neighbouring points. The two
+equations :eq:`eq-reynolds-theta` and :eq:`eq-fischer-burmeister` then become
+a system of non-linear equations. We solve it with Newton's method. Following
+:cite:t:`biboulet2020hdr` (section 3.3.3), we use a single combined unknown
+:math:`u = P - \theta`. This works because :math:`P` and :math:`\theta` are
+never positive at the same time: :math:`P` is the positive part of :math:`u`,
+and :math:`\theta` is its negative part. We get the solution at the grid
+points. It gets more accurate when we use more points.
 
-**PINN.** On représente :math:`P` et :math:`\theta` par un réseau de neurones,
-et on met les équations dans la perte, comme pour le premier PINN
-(:ref:`sec-premiere-edo`) : résidu de :eq:`eq-reynolds-theta`, résidu de
-:eq:`eq-fischer-burmeister` et conditions aux limites. On obtient une solution
-continue, que l'on peut évaluer en tout point.
+**PINN.** A neural network represents :math:`P` and :math:`\theta`. We put the
+equations into the loss, as for the first PINN (:ref:`sec-premiere-edo`): the
+residual of :eq:`eq-reynolds-theta`, the residual of
+:eq:`eq-fischer-burmeister` and the boundary conditions. We get a continuous
+solution, which we can evaluate at any point.
 
-Les étapes
-----------
-
-
+The steps
+---------
 
 .. list-table::
    :header-rows: 1
    :widths: 10 45 45
 
-   * - Étape
-     - Problème
-     - Référence de validation
+   * - Step
+     - Problem
+     - Reference for validation
    * - 1
-     - Apprendre à coder un PINN sur une EDO simple
+     - Learn to code a PINN on a simple ODE
      -
    * - 2
-     - Comprendre le problème physique
+     - Understand the physical problem
      -
    * - 3
-     - Reynolds 1D sans cavitation :eq:`eq-reynolds`, frontières imposées
-     - pression analytique :eq:`eq-pression-analytique`
+     - 1D Reynolds without cavitation :eq:`eq-reynolds`, imposed boundaries
+     - analytical pressure :eq:`eq-pression-analytique`
    * - 4
-     - Reynolds 1D avec complémentarité, par différences finies
-     - :math:`P`, :math:`\theta`, :math:`X_a`, :math:`X_b`, :math:`W` analytiques
+     - 1D Reynolds, flooded case with cavitation (without :math:`\theta`), FD and PINN
+     - analytical solution with the meniscus at the domain inlet
    * - 5
-     - Reynolds 1D avec complémentarité, par PINN
-     - mêmes grandeurs analytiques, et la solution FD
-   * - 6 (si le temps le permet)
-     - Reynolds 2D avec complémentarité, FD et PINN
-     - solution quasi analytique 2D, et la solution FD
+     - 1D Reynolds with complementarity, with finite differences
+     - analytical :math:`P`, :math:`\theta`, :math:`X_a`, :math:`X_b`, :math:`W`
+   * - 6
+     - 1D Reynolds with complementarity, with a PINN
+     - same analytical quantities, and the FD solution
+   * - 7 (if time allows)
+     - 2D Reynolds with complementarity, FD and PINN
+     - quasi-analytical 2D solution, and the FD solution
 
 .. toctree::
    :maxdepth: 2

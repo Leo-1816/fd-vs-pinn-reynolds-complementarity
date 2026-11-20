@@ -1,24 +1,23 @@
-Premiers réseaux de neurones
-============================
+First neural networks
+=====================
 
-Un PINN est un réseau de neurones entraîné à vérifier une équation
-différentielle. Pour en construire un, trois briques sont nécessaires :
+A PINN is a neural network trained to satisfy a differential equation. To
+build one, we need three building blocks:
 
-1. **dériver la sortie d'un réseau par rapport à son entrée** : c'est le rôle
-   de la différentiation automatique (autograd) de PyTorch ;
-2. **entraîner un réseau**, c'est-à-dire ajuster ses poids :math:`w` et ses
-   biais :math:`b` pour minimiser une perte ;
-3. **écrire une perte qui contient l'équation** au lieu de la solution.
+1. **take the derivative of the network output with respect to its input**:
+   this is the job of PyTorch's automatic differentiation (autograd);
+2. **train a network**, that is, adjust its weights :math:`w` and its biases
+   :math:`b` to make a loss as small as possible;
+3. **write a loss that contains the equation** instead of the solution.
 
-Ce chapitre traite ces trois briques dans l'ordre, chacune sur un cas simple
-dont la solution exacte est connue, ce qui permet de vérifier chaque résultat.
+This chapter covers these three blocks in order. Each one is tested on a
+simple case whose exact solution is known, so we can check every result.
 
-Tous les calculs sont faits en double précision (``float64``). Ces problèmes
-sont minuscules, donc le coût supplémentaire est négligeable, et l'erreur
-d'arrondi (de l'ordre de :math:`10^{-16}` en relatif, contre
-:math:`10^{-7}` en simple précision) ne se mélange pas aux erreurs que l'on
-cherche à mesurer. Les tirages aléatoires (initialisation des poids) partent
-d'une ``Seed`` fixée, chaque résultat est donc reproductible.
+All calculations use double precision (``float64``). These problems are tiny,
+so the extra cost is negligible. The rounding error (about :math:`10^{-16}` in
+relative terms, against :math:`10^{-7}` in single precision) then does not mix
+with the errors we want to measure. The random draws (initial weights) start
+from a fixed ``Seed``, so every result can be reproduced.
 
 .. toctree::
    :maxdepth: 2

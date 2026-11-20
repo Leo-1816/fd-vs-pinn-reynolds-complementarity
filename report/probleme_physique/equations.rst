@@ -1,26 +1,25 @@
 .. _sec-equations:
 
-Les équations à résoudre
-========================
+The equations to solve
+======================
 
-D'où vient l'équation de Reynolds
----------------------------------
+Where the Reynolds equation comes from
+--------------------------------------
 
-L'équation de Reynolds traduit une idée simple : **l'huile ne disparaît pas**.
-En régime stationnaire et en 1D, le débit d'huile qui traverse chaque section
-du film est le même partout. C'est la conservation de débit 
-:math:`\mathrm{d}q / \mathrm{d}x = 0` classique en mécanique des fluides.
+The Reynolds equation expresses a simple idea: **oil does not disappear**. In
+steady state and in 1D, the oil flow rate through each cross-section of the
+film is the same everywhere. This is the classical conservation of flow rate
+:math:`\mathrm{d}q / \mathrm{d}x = 0` from fluid mechanics.
 
-Dans l'épaisseur du film, la vitesse de l'huile est la somme de deux
-écoulements :
+Across the film thickness, the oil velocity is the sum of two flows:
 
-- un écoulement de **Couette**, dû à l'entraînement par les surfaces. Il
-  transporte l'huile à la vitesse moyenne :math:`u_m` ;
-- un écoulement de **Poiseuille**, dû au gradient de pression. L'huile est
-  poussée des zones de haute pression vers les zones de basse pression.
+- a **Couette** flow, caused by the surfaces dragging the oil. It carries the
+  oil at the mean velocity :math:`u_m`;
+- a **Poiseuille** flow, caused by the pressure gradient. The oil is pushed
+  from high-pressure zones towards low-pressure zones.
 
-En intégrant le profil de vitesse sur l'épaisseur :math:`h` direction :math:`y`,
- le débit par unité de largeur vaut
+We integrate the velocity profile over the thickness :math:`h` (the :math:`y`
+direction). The flow rate per unit width is
 
 .. math::
    :label: eq-debit-dimensionnel
@@ -28,8 +27,9 @@ En intégrant le profil de vitesse sur l'épaisseur :math:`h` direction :math:`y
    q = \underbrace{u_m\, h}_{\text{Couette}}
      \; \underbrace{- \, \frac{h^3}{12\,\eta_0} \frac{\mathrm{d}p}{\mathrm{d}x}}_{\text{Poiseuille}} .
 
-Écrire que ce débit est constant, :math:`\mathrm{d}q / \mathrm{d}x = 0`, donne
-l'**équation de Reynolds** pour un film plein, en régime iso-visqueux rigide :
+Writing that this flow rate is constant, :math:`\mathrm{d}q / \mathrm{d}x = 0`,
+gives the **Reynolds equation** for a full film, in the iso-viscous rigid
+regime:
 
 .. math::
    :label: eq-reynolds-dimensionnelle
@@ -37,18 +37,17 @@ l'**équation de Reynolds** pour un film plein, en régime iso-visqueux rigide :
    \frac{\mathrm{d}}{\mathrm{d}x} \left( h^3 \frac{\mathrm{d}p}{\mathrm{d}x} \right)
    = 12\, \eta_0\, u_m \frac{\mathrm{d}h}{\mathrm{d}x} .
 
-Le second membre montre que c'est la **variation de l'épaisseur**,
-:math:`\mathrm{d}h / \mathrm{d}x`, combinée à l'entraînement :math:`u_m`, qui crée
-la pression. Si les surfaces étaient parallèles, il n'y aurait aucune
-surpression.
+The right-hand side shows what creates the pressure: the **change in
+thickness**, :math:`\mathrm{d}h / \mathrm{d}x`, combined with the drag
+:math:`u_m`. If the surfaces were parallel, there would be no extra pressure.
 
-Adimensionnement
-----------------
+Dimensionless form
+------------------
 
-Les grandeurs physiques ont des ordres de grandeur très différents : des
-micromètres pour :math:`h`, des millimètres pour :math:`x`, des mégapascals pour
-:math:`p`. On les remplace par des grandeurs **sans dimension**, d'ordre 1, ce
-qui simplifie les équations et convient mieux au calcul numérique :
+The physical quantities have very different sizes: micrometres for :math:`h`,
+millimetres for :math:`x`, megapascals for :math:`p`. We replace them with
+**dimensionless** quantities of order 1. This makes the equations simpler and
+suits numerical computation better:
 
 .. math::
    :label: eq-adimensionnement
@@ -58,8 +57,8 @@ qui simplifie les équations et convient mieux au calcul numérique :
    P = \frac{p\, h_0^{3/2}}{12\, \eta_0\, u_m\, R_x^{1/2}}, \qquad
    W = \frac{w\, h_0}{12\, \eta_0\, u_m\, R_x} .
 
-Avec ces variables, la géométrie :eq:`eq-geometrie-dimensionnelle` et l'équation
-de Reynolds :eq:`eq-reynolds-dimensionnelle` deviennent
+With these variables, the geometry :eq:`eq-geometrie-dimensionnelle` and the
+Reynolds equation :eq:`eq-reynolds-dimensionnelle` become
 
 .. math::
    :label: eq-geometrie
@@ -72,37 +71,37 @@ de Reynolds :eq:`eq-reynolds-dimensionnelle` deviennent
    \frac{\mathrm{d}}{\mathrm{d}X} \left( H^3 \frac{\mathrm{d}P}{\mathrm{d}X} \right)
    = \frac{\mathrm{d}H}{\mathrm{d}X} .
 
-.. note:: Un problème sans paramètre
+.. note:: A problem with no parameter
 
-   Ces variables ont un avantage remarquable : le rayon :math:`R_x`, la viscosité
-   :math:`\eta_0`, la vitesse :math:`u_m` et l'épaisseur :math:`h_0` ont tous
-   disparu. Pour un contact parabolique, il n'existe qu'**une seule** équation
-   à résoudre, quel que soit le contact réel. Le seul paramètre qui reste est
-   la quantité d'huile disponible (voir plus bas). Les unités physiques ne
-   servent qu'à l'affichage final.
+   These variables have a remarkable advantage: the radius :math:`R_x`, the
+   viscosity :math:`\eta_0`, the velocity :math:`u_m` and the thickness
+   :math:`h_0` have all disappeared. For a parabolic contact, there is only
+   **one** equation to solve, whatever the real contact. The only parameter
+   left is the amount of available oil (see below). Physical units are only
+   used for the final display.
 
-Dans la suite, **toutes les grandeurs sont adimensionnées**.
+From now on, **all quantities are dimensionless**.
 
-Prendre en compte la cavitation : la complémentarité
-----------------------------------------------------
+Taking cavitation into account: complementarity
+-----------------------------------------------
 
-L'équation de Reynolds conservatrice
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The conservative Reynolds equation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-L'équation :eq:`eq-reynolds` n'est valable que là où le film est plein. Pour
-décrire **tout** le contact, y compris les zones cavitées, on reprend le bilan
-de débit en tenant compte de la fraction de vide :math:`\theta`. Seule la partie
-remplie d'huile, :math:`(1 - \theta) H`, est entraînée par les surfaces. Le débit
-adimensionné vaut
+Equation :eq:`eq-reynolds` is only valid where the film is full. To describe
+the **whole** contact, including the cavitated zones, we write the flow rate
+balance again, this time with the void fraction :math:`\theta`. Only the part
+filled with oil, :math:`(1 - \theta) H`, is dragged by the surfaces. The
+dimensionless flow rate is
 
 .. math::
    :label: eq-debit
 
-   Q = (1 - \theta)\, H - H^3 \frac{\mathrm{d}P}{\mathrm{d}X},
+   Q = (1 - \theta)\, H - H^3 \frac{\mathrm{d}P}{\mathrm{d}X} .
 
-et sa conservation, :math:`\mathrm{d}Q / \mathrm{d}X = 0`, donne l'équation de
-Reynolds **conservatrice** (elle conserve la masse d'huile, y compris dans les
-zones cavitées) :cite:p:`biboulet2020hdr` :
+Its conservation, :math:`\mathrm{d}Q / \mathrm{d}X = 0`, gives the
+**conservative** Reynolds equation (it conserves the mass of oil, including in
+the cavitated zones) :cite:p:`biboulet2020hdr`:
 
 .. math::
    :label: eq-reynolds-theta
@@ -110,103 +109,102 @@ zones cavitées) :cite:p:`biboulet2020hdr` :
    \frac{\mathrm{d}}{\mathrm{d}X} \left( H^3 \frac{\mathrm{d}P}{\mathrm{d}X} \right)
    - \frac{\mathrm{d}}{\mathrm{d}X} \Big( (1 - \theta)\, H \Big) = 0 .
 
-On vérifie qu'elle redonne bien les deux comportements attendus :
+We check that it gives the two expected behaviours:
 
-- **film plein** (:math:`\theta = 0`) : on retrouve exactement :eq:`eq-reynolds` ;
-- **zone cavitée** (:math:`P = 0`) : il reste
-  :math:`\mathrm{d}\big((1-\theta) H\big)/\mathrm{d}X = 0`. La quantité d'huile
-  :math:`(1 - \theta) H` est simplement transportée, sans pression.
+- **full film** (:math:`\theta = 0`): we get exactly :eq:`eq-reynolds`;
+- **cavitated zone** (:math:`P = 0`): what is left is
+  :math:`\mathrm{d}\big((1-\theta) H\big)/\mathrm{d}X = 0`. The amount of oil
+  :math:`(1 - \theta) H` is simply carried along, with no pressure.
 
-La condition de complémentarité
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The complementarity condition
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Il manque une équation : on a deux inconnues, :math:`P` et :math:`\theta`, mais
-une seule équation. La seconde exprime qu'en chaque point, **une seule des deux
-situations** est possible :
+One equation is missing: we have two unknowns, :math:`P` and :math:`\theta`,
+but only one equation. The second equation says that, at each point, **only
+one of two situations** is possible:
 
-- soit le film est plein : :math:`\theta = 0` et :math:`P \geq 0` ;
-- soit il est partiel : :math:`P = 0` et :math:`\theta \geq 0`.
+- either the film is full: :math:`\theta = 0` and :math:`P \geq 0`;
+- or it is partial: :math:`P = 0` and :math:`\theta \geq 0`.
 
-La pression ne peut pas être négative (le film se romprait), la fraction de
-vide non plus, et les deux ne peuvent pas être positives en même temps. Ces
-trois conditions forment une **condition de complémentarité** :
+The pressure cannot be negative (the film would break up). Neither can the
+void fraction. And both cannot be positive at the same time. These three
+conditions form a **complementarity condition**:
 
 .. math::
    :label: eq-complementarite
 
    P \geq 0, \qquad \theta \geq 0, \qquad P\, \theta = 0 .
 
-Cette condition est commode physiquement, mais difficile à utiliser
-numériquement : ce sont deux inégalités et une égalité. On la remplace par
-**une seule équation** grâce à la fonction de **Fischer-Burmeister**
-:cite:p:`biboulet2020hdr` :
+This condition is easy to understand physically, but hard to use numerically:
+it is two inequalities and one equality. We replace it with **a single
+equation**, using the **Fischer-Burmeister** function
+:cite:p:`biboulet2020hdr`:
 
 .. math::
    :label: eq-fischer-burmeister
 
    \phi(P, \theta) = P + \theta - \sqrt{P^2 + \theta^2} = 0 .
 
-.. note:: Pourquoi :math:`\phi = 0` équivaut à la complémentarité
+.. note:: Why :math:`\phi = 0` is the same as complementarity
 
-   Si :math:`\phi = 0`, alors :math:`P + \theta = \sqrt{P^2 + \theta^2} \geq 0`.
-   En élevant au carré : :math:`P^2 + 2 P \theta + \theta^2 = P^2 + \theta^2`,
-   donc :math:`P \theta = 0`. L'une des deux grandeurs est nulle, et l'autre
-   vaut alors sa propre valeur absolue : elle est positive ou nulle.
-   Réciproquement, si :eq:`eq-complementarite` est vérifiée, on vérifie
-   directement que :math:`\phi = 0`.
+   If :math:`\phi = 0`, then :math:`P + \theta = \sqrt{P^2 + \theta^2} \geq 0`.
+   Squaring both sides: :math:`P^2 + 2 P \theta + \theta^2 = P^2 + \theta^2`,
+   so :math:`P \theta = 0`. One of the two quantities is zero. The other one is
+   then equal to its own absolute value: it is positive or zero. Conversely, if
+   :eq:`eq-complementarite` holds, we can check directly that :math:`\phi = 0`.
 
-Le système à résoudre est donc formé de **deux équations pour deux inconnues**,
-:eq:`eq-reynolds-theta` et :eq:`eq-fischer-burmeister`. L'avantage est majeur :
-les frontières :math:`X_a` et :math:`X_b` n'ont pas à être cherchées
-séparément. Elles apparaissent d'elles-mêmes dans la solution, là où l'on passe
-de :math:`\theta > 0` à :math:`P > 0`.
+So the system to solve has **two equations for two unknowns**,
+:eq:`eq-reynolds-theta` and :eq:`eq-fischer-burmeister`. This is a big
+advantage: we do not have to look for the boundaries :math:`X_a` and
+:math:`X_b` separately. They appear by themselves in the solution, where we go
+from :math:`\theta > 0` to :math:`P > 0`.
 
+Limited oil supply
+------------------
 
-L'alimentation limitée
-----------------------
-
-On note :math:`H_{\text{oil}} = h_{\text{oil}} / h_0` l'épaisseur adimensionnée
-de la couche d'huile apportée par les surfaces. En amont du contact, cette
-huile est simplement transportée, donc le débit vaut
+We write :math:`H_{\text{oil}} = h_{\text{oil}} / h_0` for the dimensionless
+thickness of the oil layer brought by the surfaces. Upstream of the contact,
+this oil is simply carried along, so the flow rate is
 :math:`Q = H_{\text{oil}}`.
 
-En 1D, l'huile ne peut pas s'échapper sur les côtés : le débit est **le même
-dans tout le contact**,
+In 1D, the oil cannot escape sideways, so the flow rate is **the same in the
+whole contact**:
 
 .. math::
    :label: eq-debit-constant
 
    Q = (1 - \theta)\, H - H^3 \frac{\mathrm{d}P}{\mathrm{d}X} = H_{\text{oil}}
-   \quad \text{partout.}
+   \quad \text{everywhere.}
 
-Deux conséquences :
+Two consequences:
 
-- en sortie, au-delà de la frontière de cavitation, :math:`P = 0` donc
-  :math:`(1 - \theta) H = H_{\text{oil}}` : **toute l'huile entrée ressort**. En
-  particulier, au point :math:`X_b`, où le film est encore plein et le gradient.
-  de pression nul, l'épaisseur de film vaut :math:`H_b = H(X_b) = H_{\text{oil}}` 
-- la quantité d'huile disponible est **le seul paramètre** du problème. On peut
-  la donner de façon équivalente par :math:`H_{\text{oil}}`, par :math:`H_b`, ou par
-  la position du ménisque d'entrée :math:`X_a`.
+- at the outlet, beyond the cavitation boundary, :math:`P = 0`, so
+  :math:`(1 - \theta) H = H_{\text{oil}}`: **all the oil that went in comes
+  out**. In particular, at the point :math:`X_b`, the film is still full and
+  the pressure gradient is zero. So the film thickness there is
+  :math:`H_b = H(X_b) = H_{\text{oil}}`;
+- the amount of available oil is **the only parameter** of the problem. We can
+  give it equally well with :math:`H_{\text{oil}}`, with :math:`H_b`, or with
+  the position of the inlet meniscus :math:`X_a`.
 
-Un contact ne peut faire passer qu'une quantité d'huile limitée. Au-delà d'un
-seuil, noté :math:`H_{b,ff}` (*fully flooded*, voir
-:ref:`sec-solution-analytique`), le contact est **noyé** : le ménisque d'entrée
-part à l'infini en amont, et un supplément d'huile ne change plus la solution.
+A contact can only let a limited amount of oil through. Above a threshold,
+written :math:`H_{b,ff}` (*fully flooded*, see
+:ref:`sec-solution-analytique`), the contact is **flooded**: the inlet meniscus
+moves infinitely far upstream, and extra oil no longer changes the solution.
 
-Le problème complet
--------------------
+The full problem
+----------------
 
-.. admonition:: Problème à résoudre (1D)
+.. admonition:: Problem to solve (1D)
 
-   **Données** : la géométrie :math:`H(X) = 1 + X^2/2`, un domaine
-   :math:`[X_{\text{in}}, X_{\text{out}}]`, et la quantité d'huile disponible
+   **Data**: the geometry :math:`H(X) = 1 + X^2/2`, a domain
+   :math:`[X_{\text{in}}, X_{\text{out}}]`, and the amount of available oil
    :math:`H_{\text{oil}}`.
 
-   **Inconnues** : la pression :math:`P(X)` et la fraction de vide
+   **Unknowns**: the pressure :math:`P(X)` and the void fraction
    :math:`\theta(X)`.
 
-   **Équations**, en tout point du domaine :
+   **Equations**, at every point of the domain:
 
    .. math::
 
@@ -215,33 +213,32 @@ Le problème complet
       \qquad
       P + \theta - \sqrt{P^2 + \theta^2} = 0 .
 
-   **Conditions aux limites** :
+   **Boundary conditions**:
 
    .. math::
 
       P(X_{\text{in}}) = 0, \qquad P(X_{\text{out}}) = 0, \qquad
       \theta(X_{\text{in}}) = 1 - \frac{H_{\text{oil}}}{H(X_{\text{in}})} .
 
-   La dernière condition exprime qu'à l'entrée du domaine, l'espace
-   :math:`H(X_{\text{in}})` ne contient que la couche d'huile
-   :math:`H_{\text{oil}}`.
+   The last condition says that, at the domain inlet, the gap
+   :math:`H(X_{\text{in}})` only contains the oil layer :math:`H_{\text{oil}}`.
 
-   **Grandeurs à obtenir** : :math:`P(X)`, :math:`\theta(X)`, le ménisque
-   d'entrée :math:`X_a`, la frontière de cavitation :math:`X_b`, et la charge
+   **Quantities to get**: :math:`P(X)`, :math:`\theta(X)`, the inlet meniscus
+   :math:`X_a`, the cavitation boundary :math:`X_b`, and the load
 
    .. math::
 
       W = \int_{X_a}^{X_b} P(X)\, \mathrm{d}X .
 
-Le domaine doit être assez grand pour contenir toute la zone sous pression :
-:math:`X_{\text{in}} < X_a` et :math:`X_{\text{out}} > X_b`.
+The domain must be large enough to contain the whole pressurised zone:
+:math:`X_{\text{in}} < X_a` and :math:`X_{\text{out}} > X_b`.
 
-L'extension 2D
---------------
+The 2D extension
+----------------
 
-Pour le contact elliptique :eq:`eq-geometrie-dimensionnelle-2d`, la direction
-transverse est adimensionnée par son propre rayon,
-:math:`Z = z / \sqrt{R_z h_0}`, et la pression comme en 1D. La géométrie devient
+For the elliptical contact :eq:`eq-geometrie-dimensionnelle-2d`, the
+transverse direction is made dimensionless with its own radius,
+:math:`Z = z / \sqrt{R_z h_0}`, and the pressure as in 1D. The geometry becomes
 :cite:p:`biboulet2020hdr`
 
 .. math::
@@ -249,8 +246,7 @@ transverse est adimensionnée par son propre rayon,
 
    H(X, Z) = 1 + \frac{X^2}{2} + \frac{Z^2}{2},
 
-et l'équation de Reynolds pour un film plein prend la forme (éq. 2.30 de la
-HDR)
+and the Reynolds equation for a full film takes the form (eq. 2.30 of the HDR)
 
 .. math::
    :label: eq-reynolds-2d
@@ -259,14 +255,14 @@ HDR)
    + D\, \frac{\partial}{\partial Z} \left( H^3 \frac{\partial P}{\partial Z} \right)
    = \frac{\partial H}{\partial X} .
 
-Le nouveau terme décrit le débit de Poiseuille dans la direction :math:`Z`,
-c'est-à-dire la **fuite latérale**. Le rapport des rayons :math:`D` est le seul
-paramètre géométrique qui reste : pour :math:`D = 0`, on retrouve l'équation 1D
-:eq:`eq-reynolds`. Il n'y a pas de terme de Couette selon :math:`Z`, car les
-surfaces ne se déplacent que selon :math:`X`.
+The new term describes the Poiseuille flow in the :math:`Z` direction, that
+is, the **side leakage**. The ratio of the radii :math:`D` is the only
+geometric parameter left: for :math:`D = 0`, we get back the 1D equation
+:eq:`eq-reynolds`. There is no Couette term along :math:`Z`, because the
+surfaces only move along :math:`X`.
 
-La cavitation se traite comme en 1D : seule la partie remplie
-:math:`(1 - \theta) H` est entraînée, ce qui donne l'équation conservatrice
+Cavitation is handled as in 1D: only the filled part :math:`(1 - \theta) H` is
+dragged along. This gives the conservative equation
 
 .. math::
    :label: eq-reynolds-theta-2d
@@ -275,12 +271,10 @@ La cavitation se traite comme en 1D : seule la partie remplie
    + D\, \frac{\partial}{\partial Z} \left( H^3 \frac{\partial P}{\partial Z} \right)
    - \frac{\partial}{\partial X} \Big( (1 - \theta)\, H \Big) = 0,
 
-avec la même condition de Fischer-Burmeister. La HDR écrit cette équation
-(éq. 3.51) pour des surfaces texturées, avec les deux directions adimensionnées
-de la même façon, ce qui revient à :math:`D = 1`. La frontière de cavitation
-devient une courbe du plan. Le débit n'est plus constant (une partie de
-l'huile part sur les côtés), et il n'existe plus de solution analytique
-exacte, seulement une solution quasi analytique pour les contacts
-elliptiques larges (section 2.2.2 de :cite:t:`biboulet2020hdr`).
-
-
+with the same Fischer-Burmeister condition. The HDR writes this equation
+(eq. 3.51) for textured surfaces, with both directions made dimensionless in
+the same way, which amounts to :math:`D = 1`. The cavitation boundary becomes
+a curve in the plane. The flow rate is no longer constant (part of the oil
+leaves sideways), and there is no exact analytical solution any more. There is
+only a quasi-analytical solution for wide elliptical contacts (section 2.2.2
+of :cite:t:`biboulet2020hdr`).

@@ -1,7 +1,7 @@
-"""Ajustement supervisé de sin(x) par un MLP : données d'entraînement et
-interpolation par le réseau sur [X_MIN, X_MAX].
+"""Supervised fit of sin(x) with an MLP: training data and the network
+interpolation on [X_MIN, X_MAX].
 
-Lancer : uv run python figures/fit_sine_mlp.py
+Run: uv run python figures/fit_sine_mlp.py
 """
 
 import matplotlib.pyplot as plt
@@ -18,8 +18,8 @@ train(network, x_train, y_train)
 
 plot_network_vs_exact_solution(
     network, target_function, x_train, y_train, X_MIN, X_MAX,
-    title="Ajustement de sin(x) par un MLP",
-    network_label="MLP : y(x; w, b)",
-    points_label=f"{len(x_train)} données d'entraînement sin(x_i)",
+    title="Fitting sin(x) with an MLP",
+    network_label="MLP: y(x; w, b)",
+    points_label=f"{len(x_train)} training points sin(x_i)",
 )
 plt.show()

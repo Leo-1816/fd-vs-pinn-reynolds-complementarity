@@ -19,7 +19,7 @@ SEED = 0
 
 # Type aliases: a column of sample points, shape (n_points, 1),
 # and the matching column of values/derivatives.
-SamplePoints = torch.Tensor # x abscisses 
+SamplePoints = torch.Tensor  # x positions
 ColumnValues = torch.Tensor  # y function values
 
 

@@ -1,7 +1,7 @@
-"""Tests du solveur FD de Reynolds 1D sans cavitation (src/fd/reynolds_1d.py).
+"""Tests of the FD solver for 1D Reynolds without cavitation (src/fd/reynolds_1d.py).
 
-Référence : sur [Xa, Xb] donnés par la solution analytique (HDR §2.2.1),
-P = 0 aux deux bords, donc le FD doit retrouver la pression analytique.
+Reference: on [Xa, Xb] given by the analytical solution (HDR §2.2.1),
+P = 0 at both ends, so FD must find the analytical pressure.
 """
 
 import numpy as np
@@ -15,8 +15,8 @@ HB = 1.1
 
 def max_error(n: int) -> float:
     ref = analytical.solve(HB, np.array([0.0]))
-    X, P = fd.solve(ref.Xa, ref.Xb, n) # On considère que le solveur FD 
-    # est appliqué sur l'intervalle [Xa, Xb] de la solution analytique.
+    X, P = fd.solve(ref.Xa, ref.Xb, n)  # the FD solver is applied on the
+    # interval [Xa, Xb] of the analytical solution.
     P_exact = analytical.pressure_from_outlet(X, HB)
     return float(np.max(np.abs(P - P_exact)))
 

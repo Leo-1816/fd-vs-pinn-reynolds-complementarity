@@ -1,1 +1,1 @@
-"""Solveurs par différences finies."""
+"""Finite difference solvers."""

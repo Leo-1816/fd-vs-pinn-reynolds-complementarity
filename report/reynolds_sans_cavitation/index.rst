@@ -1,21 +1,21 @@
-Reynolds 1D sans cavitation
-===========================
+1D Reynolds without cavitation
+==============================
 
-Premier cas résolu par les deux méthodes : l'équation :eq:`eq-reynolds`, avec
-un film plein partout et :math:`P = 0` aux deux bords.
+This is the first case solved with both methods: the equation
+:eq:`eq-reynolds`, with a full film everywhere and :math:`P = 0` at both ends.
 
-.. important:: Un problème volontairement simplifié
+.. important:: A problem simplified on purpose
 
-   Les équations résolues ici ne contiennent ni la fraction de vide
-   :math:`\theta`, ni la quantité d'huile :math:`H_b`, ni la complémentarité :
-   rien n'y décrit la cavitation ni le manque d'huile. Elles ne représentent
-   donc pas encore la complexité du cas sous-alimenté.
+   The equations solved here contain neither the void fraction :math:`\theta`,
+   nor the amount of oil :math:`H_b`, nor complementarity. Nothing in them
+   describes cavitation or a lack of oil. So they do not yet capture how
+   complex the starved case is.
 
-   Le domaine :math:`[X_a, X_b]` est emprunté à la solution analytique
-   (:math:`H_b = 1{,}1`) pour une seule raison : sur cette portion, le film
-   est plein et la pression s'annule aux deux bords, donc la pression
-   analytique est une solution exacte de ce problème simplifié. Elle sert
-   uniquement de référence pour valider les deux méthodes.
+   We borrow the domain :math:`[X_a, X_b]` from the analytical solution
+   (:math:`H_b = 1.1`) for one reason only. On this interval, the film is full
+   and the pressure is zero at both ends. So the analytical pressure is an
+   exact solution of this simplified problem. It is only used as a reference to
+   validate both methods.
 
 .. toctree::
    :maxdepth: 2

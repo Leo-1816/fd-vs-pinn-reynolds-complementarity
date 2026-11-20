@@ -1,12 +1,8 @@
-"""
+"""Supervised learning: we give the network training points (x_i, sin(x_i))
+and minimise the loss MSE = mean((y(x_i; w, b) - sin(x_i))^2).
 
-Apprentissage supervisé : on fournit au réseau des points d'entraînement 
-(x_i, sin(x_i)) et on minimise la perte MSE = moyenne((y(x_i; w, b) - sin(x_i))^2).
-
-La fonction à apprendre est définie dans target_function(x). 
-Pour apprendre une autre fonction, il suffit de modifier cette fonction.
-
-
+The function to learn is defined in target_function(x).
+To learn another function, just change that function.
 """
 
 import math
@@ -18,23 +14,23 @@ DTYPE = torch.float64
 SEED = 0
 
 # ---------------------------------------------------------------------------
-# 1. Les données
+# 1. The data
 # ---------------------------------------------------------------------------
 X_MIN = -math.pi
 X_MAX = math.pi
 
-SamplePoints = torch.Tensor   # forme (n_points, 1)
-ColumnValues = torch.Tensor   # forme (n_points, 1)
+SamplePoints = torch.Tensor   # shape (n_points, 1)
+ColumnValues = torch.Tensor   # shape (n_points, 1)
 
 
 # ---------------------------------------------------------
 # ---------------------------------------------------------
-# Fonction à apprendre 
-# Seul détail à changer pour apprendre une autre fonction
+# Function to learn
+# The only thing to change to learn another function
 
 
 def target_function(x: SamplePoints) -> ColumnValues:
-    """La fonction à apprendre : sin(x)."""
+    """The function to learn: sin(x)."""
     return torch.sin(x)
 
 # ---------------------------------------------------------
@@ -42,17 +38,17 @@ def target_function(x: SamplePoints) -> ColumnValues:
 
 
 def make_training_data(n_points: int) -> tuple[SamplePoints, ColumnValues]:
-    """Points régulièrement espacés sur [X_MIN, X_MAX] et valeurs sin(x) associées.
-    Pas de requires_grad : on ne dérive pas par rapport à x."""
+    """Evenly spaced points on [X_MIN, X_MAX] and the matching values sin(x).
+    No requires_grad: we do not take derivatives with respect to x."""
     x = torch.linspace(X_MIN, X_MAX, n_points, dtype=DTYPE).reshape(-1, 1)
     return x, target_function(x)
 
 
 # ---------------------------------------------------------------------------
-# 2. Le réseau
+# 2. The network
 # ---------------------------------------------------------------------------
 def make_network(hidden_width: int = 20) -> nn.Module:
-    """x (1 valeur) -> y (1 valeur), une couche cachée tanh de hidden_width neurones."""
+    """x (1 value) -> y (1 value), one tanh hidden layer of hidden_width neurons."""
     return nn.Sequential(
         nn.Linear(1, hidden_width),
         nn.Tanh(),
@@ -60,13 +56,12 @@ def make_network(hidden_width: int = 20) -> nn.Module:
 
 
 # ---------------------------------------------------------------------------
-# 3. La perte
+# 3. The loss
 # ---------------------------------------------------------------------------
 def mean_squared_error_loss(
     network: nn.Module, x: SamplePoints, y_target: ColumnValues
 ) -> torch.Tensor:
-    """Renvoie un SCALAIRE : moyenne de (y(x; w, b) - sin(x))^2.
-    """
+    """Returns a SCALAR: mean of (y(x; w, b) - sin(x))^2."""
 
     y_pred = network(x)
     loss = torch.mean((y_pred - y_target) ** 2)
@@ -74,7 +69,7 @@ def mean_squared_error_loss(
 
 
 # ---------------------------------------------------------------------------
-# 4. La boucle d'entraînement
+# 4. The training loop
 # ---------------------------------------------------------------------------
 def train(
     network: nn.Module,
@@ -83,9 +78,9 @@ def train(
     n_epochs: int = 5000,
     learning_rate: float = 1e-3,
 ) -> list[float]:
-    """Minimise mean_squared_error_loss avec Adam. Renvoie l'historique de la perte.
+    """Minimises mean_squared_error_loss with Adam. Returns the loss history.
 
-    Mêmes 4 étapes par itération que pour le PINN : seule la perte change.
+    Same 4 steps per iteration as for the PINN: only the loss changes.
     """
     optimizer = torch.optim.Adam(network.parameters(), lr=learning_rate)
     loss_history: list[float] = []
@@ -98,18 +93,18 @@ def train(
 
         loss_history.append(loss.item())
         if epoch % 500 == 0:
-            print(f"  epoch {epoch:5d}   perte = {loss.item():.3e}")
+            print(f"  epoch {epoch:5d}   loss = {loss.item():.3e}")
 
     return loss_history
 
 
 # ---------------------------------------------------------------------------
-# 5. La vérification
+# 5. The check
 # ---------------------------------------------------------------------------
 def max_error_against_target(network: nn.Module, n_test_points: int = 401) -> float:
-    """Erreur max |y(x; w, b) - sin(x)| sur des points de TEST, plus nombreux
-    que les points d'entraînement : le réseau a-t-il appris la fonction
-    entre les points, ou seulement par coeur aux points d'entraînement ?"""
+    """Max error |y(x; w, b) - sin(x)| at TEST points, more numerous than the
+    training points: did the network learn the function between the points,
+    or only memorise the training points?"""
     x_test = torch.linspace(X_MIN, X_MAX, n_test_points, dtype=DTYPE).reshape(-1, 1)
     with torch.no_grad():
         prediction = network(x_test)
@@ -123,9 +118,9 @@ def main() -> None:
     network = make_network()
     x_train, y_train = make_training_data(n_points=50)
 
-    print(f"Erreur max AVANT entraînement : {max_error_against_target(network):.3e}")
+    print(f"Max error BEFORE training: {max_error_against_target(network):.3e}")
     train(network, x_train, y_train)
-    print(f"Erreur max APRÈS entraînement : {max_error_against_target(network):.3e}")
+    print(f"Max error AFTER training: {max_error_against_target(network):.3e}")
 
 
 

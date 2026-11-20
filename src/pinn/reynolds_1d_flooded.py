@@ -1,18 +1,21 @@
-"""PINN pour Reynolds 1D, cas noyé avec cavitation (même problème que fd/reynolds_1d_flooded.py).
+"""PINN for 1D Reynolds, flooded case with cavitation (same problem as fd/reynolds_1d_flooded.py).
 
-Sur [X_IN, X_OUT], P(X_IN) = P(X_OUT) = 0. On ne connaît pas Xb : on impose la
-complémentarité entre la pression et le résidu de Reynolds r (sans θ) :
+On [X_IN, X_OUT], P(X_IN) = P(X_OUT) = 0. We do not know Xb: we impose the
+complementarity between the pressure and the Reynolds residual r (without θ):
 
     P ≥ 0,   −r ≥ 0,   P · r = 0
 
-    - film plein (P > 0)  : r = 0, Reynolds est vérifiée ;
-    - zone cavitée (P = 0) : r ≤ 0 suffit (pénaliser seulement P < 0 ne marche
-      pas : en zone cavitée, r = −dH/dX ≠ 0, le réseau devrait choisir entre les deux).
+    - full film (P > 0)      : r = 0, Reynolds holds;
+    - cavitated zone (P = 0) : r ≤ 0 is enough (penalising only P < 0 does not
+      work: in the cavitated zone, r = −dH/dX ≠ 0, so the network would have to
+      choose between the two).
 
-Les trois conditions tiennent en une seule équation (Fischer-Burmeister, comme
-dans le rapport, éq. eq-fischer-burmeister, avec θ remplacé par −r) :
+The three conditions fit into one equation (Fischer-Burmeister, as in the
+report, eq. eq-fischer-burmeister, with θ replaced by −r):
 
     φ(P, −r) = P − r − √(P² + r²) = 0
+
+Source of this complementarity: HL-nets (Cheng et al., arXiv:2304.10476), eq. 5.
 """
 
 import numpy as np
@@ -29,26 +32,26 @@ BOUNDARY_PENALTY = 10.0
 SQRT_EPSILON = 1e-20
 
 # ---------------------------------------------------------------------------
-# 1. Le problème
+# 1. The problem
 # ---------------------------------------------------------------------------
 X_IN = -10.0
 X_OUT = 3.0
 
-SamplePoints = torch.Tensor    # colonne de X, forme (n_points, 1)
-ColumnValues = torch.Tensor    # valeurs associées, forme (n_points, 1)
+SamplePoints = torch.Tensor    # column of X values, shape (n_points, 1)
+ColumnValues = torch.Tensor    # matching values, shape (n_points, 1)
 
 
 def make_sample_points(n_points: int) -> SamplePoints:
-    """Points réguliers sur [X_IN, X_OUT], forme (n_points, 1), avec requires_grad."""
+    """Evenly spaced points on [X_IN, X_OUT], shape (n_points, 1), with requires_grad."""
     X = torch.linspace(X_IN, X_OUT, n_points, dtype=DTYPE).reshape(-1, 1)
     return X.requires_grad_(True)
 
 
 # ---------------------------------------------------------------------------
-# 2. Le réseau
+# 2. The network
 # ---------------------------------------------------------------------------
 class PressureNetwork(nn.Module):
-    """X -> P. X est d'abord ramené dans [−1, 1], puis trois couches cachées tanh."""
+    """X -> P. X is first scaled to [−1, 1], then three tanh hidden layers."""
 
     def __init__(self, hidden_width: int = 30) -> None:
         super().__init__()
@@ -65,27 +68,28 @@ class PressureNetwork(nn.Module):
 
 
 # ---------------------------------------------------------------------------
-# 3. Le résidu de complémentarité
+# 3. The complementarity residual
 # ---------------------------------------------------------------------------
 def complementarity_residual(network: nn.Module, X: SamplePoints) -> ColumnValues:
-    """Renvoie φ(P, −r/H³) = P − r/H³ − √(P² + (r/H³)²), forme (n_points, 1).
+    """Returns φ(P, −r/H³) = P − r/H³ − √(P² + (r/H³)²), shape (n_points, 1).
 
-    Indice : r vient de reynolds_residual (déjà écrit dans pinn/reynolds_1d.py),
-    H de film_thickness.
+    r comes from reynolds_residual (pinn/reynolds_1d.py), H from film_thickness.
+    Dividing by H³ > 0 keeps the sign of r, but stops r from crushing the other
+    terms upstream, where H³ is about 10⁵.
     """
     r = reynolds_residual(network, X)
     H = film_thickness(X)
     P = network(X)
     r_scaled = r / H**3
-    # SQRT_EPSILON : évite une dérivée infinie de √ quand P = r = 0
+    # SQRT_EPSILON: avoids an infinite derivative of √ when P = r = 0
     return P - r_scaled - torch.sqrt(P**2 + r_scaled**2 + SQRT_EPSILON)
 
 
 # ---------------------------------------------------------------------------
-# 4. La perte
+# 4. The loss
 # ---------------------------------------------------------------------------
 def pinn_loss(network: nn.Module, X: SamplePoints) -> torch.Tensor:
-    """Renvoie un SCALAIRE : moyenne(φ²) + BOUNDARY_PENALTY (P(X_IN)² + P(X_OUT)²)."""
+    """Returns a SCALAR: mean(φ²) + BOUNDARY_PENALTY (P(X_IN)² + P(X_OUT)²)."""
     phi = complementarity_residual(network, X)
     P_in = network(torch.tensor([[X_IN]], dtype=DTYPE))
     P_out = network(torch.tensor([[X_OUT]], dtype=DTYPE))
@@ -94,7 +98,7 @@ def pinn_loss(network: nn.Module, X: SamplePoints) -> torch.Tensor:
 
 
 # ---------------------------------------------------------------------------
-# 5. La boucle d'entraînement
+# 5. The training loop
 # ---------------------------------------------------------------------------
 def train(
     network: nn.Module,
@@ -102,7 +106,7 @@ def train(
     n_epochs: int = 15000,
     learning_rate: float = 1e-3,
 ) -> list[float]:
-    """Minimise pinn_loss avec Adam (même boucle que pinn/reynolds_1d.py)."""
+    """Minimises pinn_loss with Adam (same loop as pinn/reynolds_1d.py)."""
     optimizer = torch.optim.Adam(network.parameters(), lr=learning_rate)
     loss_history: list[float] = []
     for epoch in range(1, n_epochs + 1):
@@ -117,10 +121,10 @@ def train(
 
 
 # ---------------------------------------------------------------------------
-# 6. La vérification
+# 6. The check
 # ---------------------------------------------------------------------------
 def exact_solution(X: np.ndarray) -> analytical.AnalyticalSolution1D:
-    """Solution analytique dont le ménisque est en Xa = X_IN (cf. test FD cas noyé)."""
+    """Analytical solution whose meniscus is at Xa = X_IN (see the FD flooded-case test)."""
     Hb = root_scalar(lambda h: float(analytical.pressure_from_outlet(X_IN, h)),
                      bracket=(1.0, 1.2258), method="brentq").root
     return analytical.solve(Hb, X)
@@ -128,7 +132,7 @@ def exact_solution(X: np.ndarray) -> analytical.AnalyticalSolution1D:
 
 def main() -> None:
     torch.manual_seed(SEED)
-    print(f"seed = {SEED}, dtype = {DTYPE}, domaine = [{X_IN}, {X_OUT}]")
+    print(f"seed = {SEED}, dtype = {DTYPE}, domain = [{X_IN}, {X_OUT}]")
 
     network = PressureNetwork()
     train(network, make_sample_points(n_points=400))
@@ -137,8 +141,8 @@ def main() -> None:
     exact = exact_solution(X_test)
     with torch.no_grad():
         P = network(torch.as_tensor(X_test, dtype=DTYPE).reshape(-1, 1)).numpy().ravel()
-    print(f"Erreur max sur P : {np.max(np.abs(P - exact.P)):.3e}  (P max = {exact.P.max():.3f})")
-    print(f"W PINN = {np.trapezoid(P, X_test):.4f}, W exacte = {exact.W:.4f}")
+    print(f"Max error on P: {np.max(np.abs(P - exact.P)):.3e}  (P max = {exact.P.max():.3f})")
+    print(f"W PINN = {np.trapezoid(P, X_test):.4f}, W exact = {exact.W:.4f}")
 
 
 if __name__ == "__main__":

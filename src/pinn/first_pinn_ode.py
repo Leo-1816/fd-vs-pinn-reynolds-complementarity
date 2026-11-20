@@ -1,50 +1,46 @@
-"""Premier PINN : résoudre y'(x) = -y(x) sur [0, X_MAX], avec y(0) = 1.
+"""First PINN: solve y'(x) = -y(x) on [0, X_MAX], with y(0) = 1.
 
-Solution exacte : y(x) = exp(-x)  (sert UNIQUEMENT à vérifier, jamais dans la perte).
-
-------------------------------------------------------------------------------
-L'idée en une phrase
-------------------------------------------------------------------------------
-On ne cherche pas y(x) comme une liste de valeurs (comme en FD), on cherche
-un réseau de neurones y(x; w, b) dont les poids w et les biais b sont tels
-que l'équation soit vérifiée. On transforme donc "résoudre l'EDO" en
-"minimiser une perte" :
-
-    perte(w, b) =  moyenne sur les x_i de [ y'(x_i; w, b) + y(x_i; w, b) ]^2   <- résidu de l'EDO
-                 + [ y(0; w, b) - 1 ]^2                                        <- condition initiale
-
-Si la perte vaut 0, alors y' + y = 0 en tous les x_i ET y(0) = 1 :
-y(x; w, b) est (approximativement) la solution. On n'a jamais donné exp(-x)
-au réseau, seulement l'équation.
-
-Les x_i sont les "points de collocation" : les endroits où on vérifie
-l'équation. Ils jouent un peu le rôle des noeuds en FD.
+Exact solution: y(x) = exp(-x) (ONLY used for checking, never in the loss).
 
 ------------------------------------------------------------------------------
-Ce qu'on réutilise du fichier autograd_derivatives.py
+The idea in one sentence
 ------------------------------------------------------------------------------
-- x.requires_grad_(True) sur les points de collocation, pour pouvoir dériver
-  la sortie du réseau par rapport à x.
-- torch.autograd.grad(..., create_graph=True) pour obtenir y'(x).
-  create_graph=True est indispensable ici : la perte contient y', et on doit
-  ensuite dériver la perte par rapport aux poids w et biais b (backward).
-  Sans graphe, pas de gradient pour w et b.
+We do not look for y(x) as a list of values (as in FD). We look for a neural
+network y(x; w, b) whose weights w and biases b make the equation hold. So
+"solve the ODE" becomes "minimise a loss":
+
+    loss(w, b) =  mean over the x_i of [ y'(x_i; w, b) + y(x_i; w, b) ]^2   <- ODE residual
+                + [ y(0; w, b) - 1 ]^2                                      <- initial condition
+
+If the loss is 0, then y' + y = 0 at all x_i AND y(0) = 1:
+y(x; w, b) is (approximately) the solution. We never gave exp(-x) to the
+network, only the equation.
+
+The x_i are the "collocation points": the places where we check the
+equation. They play a role similar to the nodes in FD.
 
 ------------------------------------------------------------------------------
-Plan du fichier (à compléter ensemble, cherche les "TODO")
+What we reuse from autograd_derivatives.py
 ------------------------------------------------------------------------------
-1. Le problème (donné)
-2. Le réseau (donné)
-3. Le résidu de l'EDO          <- TODO 1
-4. La perte                    <- TODO 2
-5. La boucle d'entraînement    <- TODO 3
-6. La vérification (donnée)
+- x.requires_grad_(True) on the collocation points, so we can take the
+  derivative of the network output with respect to x.
+- torch.autograd.grad(..., create_graph=True) to get y'(x).
+  create_graph=True is essential here: the loss contains y', and we then take
+  the derivative of the loss with respect to the weights w and biases b
+  (backward). Without the graph, w and b get no gradient.
 
-Précision : float64. Le problème est minuscule, donc le coût est négligeable,
-et on évite que l'erreur d'arrondi float32 (~1e-7) se mélange à l'erreur
-du PINN quand on la mesurera.
+------------------------------------------------------------------------------
+Plan of the file
+------------------------------------------------------------------------------
+1. The problem
+2. The network
+3. The ODE residual
+4. The loss
+5. The training loop
+6. The check
 
-
+Precision: float64. The problem is tiny, so the cost is negligible, and the
+float32 rounding error (~1e-7) does not mix with the PINN error we measure.
 """
 
 import torch
@@ -54,38 +50,38 @@ DTYPE = torch.float64
 SEED = 0
 
 # ---------------------------------------------------------------------------
-# 1. Le problème
+# 1. The problem
 # ---------------------------------------------------------------------------
 X_MAX = 2.0
 INITIAL_POINT = 0.0
 INITIAL_VALUE = 1.0
 
-# Types : une colonne de points, forme (n_points, 1), et les valeurs associées.
+# Types: a column of points, shape (n_points, 1), and the matching values.
 SamplePoints = torch.Tensor
 ColumnValues = torch.Tensor
 
 
 def exact_solution(x: SamplePoints) -> ColumnValues:
-    """y(x) = exp(-x). Pour la vérification uniquement."""
+    """y(x) = exp(-x). Only used for checking."""
     return torch.exp(-x)
 
 
 def make_sample_points(n_points: int) -> SamplePoints:
-    """Points régulièrement espacés sur [0, X_MAX], forme (n_points, 1),
-    avec requires_grad pour pouvoir calculer y'(x) par autograd."""
+    """Evenly spaced points on [0, X_MAX], shape (n_points, 1),
+    with requires_grad so that autograd can compute y'(x)."""
     x = torch.linspace(0.0, X_MAX, n_points, dtype=DTYPE).reshape(-1, 1)
     return x.requires_grad_(True)
 
 
 # ---------------------------------------------------------------------------
-# 2. Le réseau
+# 2. The network
 # ---------------------------------------------------------------------------
 def make_network(hidden_width: int = 20) -> nn.Module:
-    """x (1 valeur) -> y (1 valeur), deux couches cachées tanh.
+    """x (1 value) -> y (1 value), two tanh hidden layers.
 
-    tanh plutôt que ReLU : ReLU est linéaire par morceaux, sa dérivée seconde
-    est nulle presque partout. Ici on n'a besoin que de y', mais on prend
-    l'habitude dès maintenant (pour y'' + y = 0 en semaine 2, ReLU échouerait).
+    tanh rather than ReLU: ReLU is piecewise linear, so its second derivative
+    is zero almost everywhere. Here we only need y', but we get into the habit
+    now (for equations with y'', ReLU would fail).
     """
     return nn.Sequential(
         nn.Linear(1, hidden_width),
@@ -97,24 +93,20 @@ def make_network(hidden_width: int = 20) -> nn.Module:
 
 
 # ---------------------------------------------------------------------------
-# 3. Le résidu de l'EDO          
+# 3. The ODE residual
 # ---------------------------------------------------------------------------
 def ode_residual(network: nn.Module, x: SamplePoints) -> ColumnValues:
-    """Renvoie r(x) = y'(x) + y(x), forme (n_points, 1).
-
-    """
+    """Returns r(x) = y'(x) + y(x), shape (n_points, 1)."""
     y = network(x)
     y_prime = torch.autograd.grad(y.sum(), x, create_graph=True)[0]
     return y_prime + y
 
 
 # ---------------------------------------------------------------------------
-# 4. La perte                    
+# 4. The loss
 # ---------------------------------------------------------------------------
 def pinn_loss(network: nn.Module, x: SamplePoints) -> torch.Tensor:
-    """Renvoie un SCALAIRE : moyenne(r^2) + (y(0) - 1)^2.
-
-    """
+    """Returns a SCALAR: mean(r^2) + (y(0) - 1)^2."""
     residual_from_ode = ode_residual(network, x)
     mean_squared_residual = torch.mean(residual_from_ode**2)
     y_at_initial_point = network(torch.tensor([[INITIAL_POINT]], dtype=DTYPE))
@@ -124,7 +116,7 @@ def pinn_loss(network: nn.Module, x: SamplePoints) -> torch.Tensor:
 
 
 # ---------------------------------------------------------------------------
-# 5. La boucle d'entraînement    TODO 3
+# 5. The training loop
 # ---------------------------------------------------------------------------
 def train(
     network: nn.Module,
@@ -132,14 +124,13 @@ def train(
     n_epochs: int = 5000,
     learning_rate: float = 1e-3,
 ) -> list[float]:
-    """Minimise pinn_loss avec Adam. Renvoie l'historique de la perte.
+    """Minimises pinn_loss with Adam. Returns the loss history.
 
-    Une itération = toujours les mêmes 4 étapes :
-        1. remettre les gradients à zéro       optimizer.zero_grad()
-        2. calculer la perte                   loss = pinn_loss(...)
-        3. calculer d(perte)/d(poids)          loss.backward()
-        4. mettre à jour les poids             optimizer.step()
-
+    One iteration = always the same 4 steps:
+        1. set the gradients back to zero      optimizer.zero_grad()
+        2. compute the loss                    loss = pinn_loss(...)
+        3. compute d(loss)/d(weights)          loss.backward()
+        4. update the weights                  optimizer.step()
     """
     optimizer = torch.optim.Adam(network.parameters(), lr=learning_rate)
     loss_history: list[float] = []
@@ -150,23 +141,23 @@ def train(
         loss.backward()
         optimizer.step()
 
-        # Affichage de temps en temps :
+        # Print from time to time:
         loss_history.append(loss.item())
         if epoch % 500 == 0:
-            print(f"  epoch {epoch:5d}   perte = {loss.item():.3e}")
+            print(f"  epoch {epoch:5d}   loss = {loss.item():.3e}")
 
     return loss_history
 
 
 # ---------------------------------------------------------------------------
-# 6. La vérification
+# 6. The check
 # ---------------------------------------------------------------------------
 def max_error_against_exact_solution(network: nn.Module, n_test_points: int = 201) -> float:
-    """Erreur max |y(x; w, b) - exp(-x)| sur des points de TEST, différents des
-    points de collocation : on vérifie que le réseau a appris la fonction
-    partout, pas seulement là où on l'a contraint."""
+    """Max error |y(x; w, b) - exp(-x)| at TEST points, different from the
+    collocation points: we check that the network learned the function
+    everywhere, not only where we constrained it."""
     x_test = torch.linspace(0.0, X_MAX, n_test_points, dtype=DTYPE).reshape(-1, 1)
-    with torch.no_grad():  # évaluation seulement : pas besoin de graphe
+    with torch.no_grad():  # evaluation only: no graph needed
         prediction = network(x_test)
     return (prediction - exact_solution(x_test)).abs().max().item()
 
@@ -178,9 +169,9 @@ def main() -> None:
     network = make_network()
     x_collocation = make_sample_points(n_points=50)
 
-    print(f"Erreur max AVANT entraînement : {max_error_against_exact_solution(network):.3e}")
+    print(f"Max error BEFORE training: {max_error_against_exact_solution(network):.3e}")
     train(network, x_collocation)
-    print(f"Erreur max APRÈS entraînement : {max_error_against_exact_solution(network):.3e}")
+    print(f"Max error AFTER training: {max_error_against_exact_solution(network):.3e}")
 
 
 if __name__ == "__main__":

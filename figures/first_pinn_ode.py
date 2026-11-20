@@ -1,6 +1,6 @@
-"""Premier PINN, y' = -y, y(0) = 1 : réseau vs exp(-x) sur [0, X_MAX].
+"""First PINN, y' = -y, y(0) = 1: network vs exp(-x) on [0, X_MAX].
 
-Lancer : uv run python figures/first_pinn_ode.py
+Run: uv run python figures/first_pinn_ode.py
 """
 
 import matplotlib.pyplot as plt
@@ -19,8 +19,8 @@ with torch.no_grad():
     y_collocation = network(x_collocation)
 plot_network_vs_exact_solution(
     network, exact_solution, x_collocation, y_collocation, 0.0, X_MAX,
-    title="y' = -y, y(0) = 1 : PINN vs exp(-x)",
-    network_label="PINN : y(x; w, b)",
-    points_label=f"{len(x_collocation)} points de collocation",
+    title="y' = -y, y(0) = 1: PINN vs exp(-x)",
+    network_label="PINN: y(x; w, b)",
+    points_label=f"{len(x_collocation)} collocation points",
 )
 plt.show()

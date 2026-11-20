@@ -1,8 +1,8 @@
-"""Cas noyé avec cavitation par méthode de tir (src/fd/reynolds_1d_flooded.py).
+"""Flooded case with cavitation, shooting method (src/fd/reynolds_1d_flooded.py).
 
-Référence exacte à X_IN fini : P(X_IN) = 0 avec un film plein dès X_IN, c'est la
-solution analytique (HDR §2.2.1) dont le ménisque est en Xa = X_IN. Son Hb
-s'obtient par oil_quantity_from_meniscus (sens inverse du tableau HDR fig. 2.3).
+Exact reference at finite X_IN: P(X_IN) = 0 with a full film from X_IN on. This
+is the analytical solution (HDR §2.2.1) whose meniscus is at Xa = X_IN. Its Hb
+comes from oil_quantity_from_meniscus (inverse direction of the HDR table, fig. 2.3).
 """
 
 import numpy as np

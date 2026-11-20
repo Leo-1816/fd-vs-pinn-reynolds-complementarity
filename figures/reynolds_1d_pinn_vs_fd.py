@@ -1,6 +1,6 @@
-"""Reynolds 1D sans cavitation : pression PINN vs FD, écarts sur W et F.
+"""1D Reynolds without cavitation: PINN vs FD pressure, gaps on W and F.
 
-Lancer : uv run python figures/reynolds_1d_pinn_vs_fd.py
+Run: uv run python figures/reynolds_1d_pinn_vs_fd.py
 """
 
 import matplotlib.pyplot as plt
@@ -24,7 +24,7 @@ network = pinn.make_network()
 pinn.train(network, pinn.make_sample_points(n_points=50))
 P_pinn, dP_pinn = pinn.pressure_and_gradient(network, X)
 
-# Charge et frottement (roulement pur, surface du bas)
+# Load and friction (pure rolling, bottom surface)
 H = film_thickness(X)
 W_fd, W_pinn = load(X, P_fd), load(X, P_pinn)
 F_fd = friction_force(X, shear_stress_1D(H, dP_fd, 0.0, 0.0, "bottom"))
@@ -32,8 +32,8 @@ F_pinn = friction_force(X, shear_stress_1D(H, dP_pinn, 0.0, 0.0, "bottom"))
 
 plot_pinn_vs_fd_pressure(
     X, P_fd, P_pinn,
-    title=f"Reynolds 1D sans cavitation, Hb = {pinn.HB} : PINN vs FD",
-    subtitle=(f"Écart relatif : charge W {abs(W_pinn / W_fd - 1):.1e}, "
-              f"frottement F (roulement pur) {abs(F_pinn / F_fd - 1):.1e}"),
+    title=f"1D Reynolds without cavitation, Hb = {pinn.HB}: PINN vs FD",
+    subtitle=(f"Relative gap: load W {abs(W_pinn / W_fd - 1):.1e}, "
+              f"friction F (pure rolling) {abs(F_pinn / F_fd - 1):.1e}"),
 )
 plt.show()

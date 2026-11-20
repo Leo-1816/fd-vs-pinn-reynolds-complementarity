@@ -1,11 +1,11 @@
-"""Fonctions de tracé pour les PINN. Les scripts de figures/ les appellent
-puis affichent la figure avec plt.show() (aucun fichier image enregistré)."""
+"""Plotting functions for the PINNs. The scripts in figures/ call them, then
+show the figure with plt.show() (no image file is saved)."""
 
 import matplotlib.pyplot as plt
 import torch
 from torch import nn
 
-# Palette catégorielle validée (slots 1 et 2), axes et grille en gris neutre.
+# Validated categorical palette (slots 1 and 2), axes and grid in neutral grey.
 COLOR_EXACT = "#2a78d6"
 COLOR_NETWORK = "#eb6834"
 COLOR_TEXT_SECONDARY = "#5f5e5a"
@@ -34,18 +34,17 @@ def plot_network_vs_exact_solution(
     points_label: str,
     n_plot_points: int = 401,
 ) -> plt.Figure:
-    """En haut : réseau vs solution exacte + points (x_points, y_points).
-    En bas : erreur absolue en échelle log.
+    """Top: network vs exact solution + points (x_points, y_points).
+    Bottom: absolute error on a log scale.
 
-    Les points sont passés explicitement : pour un PINN ce sont les points de
-    collocation (valeurs du réseau), pour un ajustement supervisé ce sont les
-    données d'entraînement."""
+    The points are passed explicitly: for a PINN they are the collocation
+    points (network values), for a supervised fit they are the training data."""
     x_plot = torch.linspace(x_min, x_max, n_plot_points, dtype=x_points.dtype).reshape(-1, 1)
     with torch.no_grad():
         y_network = network(x_plot)
     y_exact = exact_solution(x_plot)
     absolute_error = (y_network - y_exact).abs()
-    print(f"Erreur max sur [{x_min}, {x_max}] : {absolute_error.max().item():.3e}")
+    print(f"Max error on [{x_min}, {x_max}]: {absolute_error.max().item():.3e}")
 
     x_plot_np = x_plot.squeeze().numpy()
     figure, (axes_solution, axes_error) = plt.subplots(
@@ -54,7 +53,7 @@ def plot_network_vs_exact_solution(
 
     axes_solution.plot(
         x_plot_np, y_exact.squeeze().numpy(),
-        color=COLOR_EXACT, linewidth=2, label="solution exacte",
+        color=COLOR_EXACT, linewidth=2, label="exact solution",
     )
     axes_solution.plot(
         x_plot_np, y_network.squeeze().numpy(),
@@ -72,9 +71,9 @@ def plot_network_vs_exact_solution(
 
     axes_error.semilogy(x_plot_np, absolute_error.squeeze().numpy(), color=COLOR_NETWORK, linewidth=2)
     axes_error.set_xlabel("x")
-    axes_error.set_ylabel("|y(x; w, b) - y exacte|")
+    axes_error.set_ylabel("|y(x; w, b) - y exact|")
     axes_error.set_title(
-        f"Erreur absolue (max = {absolute_error.max().item():.1e})",
+        f"Absolute error (max = {absolute_error.max().item():.1e})",
         loc="left", fontsize="medium", color=COLOR_TEXT_SECONDARY,
     )
     style_axes(axes_error)
@@ -84,9 +83,9 @@ def plot_network_vs_exact_solution(
 
 
 def plot_pinn_vs_fd_pressure(X, P_fd, P_pinn, title: str, subtitle: str) -> plt.Figure:
-    """En haut : pression FD vs PINN. En bas : écart absolu en échelle log.
+    """Top: FD vs PINN pressure. Bottom: absolute gap on a log scale.
 
-    X, P_fd, P_pinn : tableaux numpy de même forme (n,)."""
+    X, P_fd, P_pinn: numpy arrays of the same shape (n,)."""
     figure, (axes_pressure, axes_gap) = plt.subplots(
         2, 1, figsize=(7, 6), sharex=True, gridspec_kw={"height_ratios": [2, 1]}
     )

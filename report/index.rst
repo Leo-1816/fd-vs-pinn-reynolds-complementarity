@@ -1,6 +1,10 @@
 FD vs PINN: the Reynolds equation with complementarity
 ======================================================
 
+:Author: Leonard von Fabeck
+:Framework: PRI project
+:Tutor: Nans Biboulet
+
 This report compares two ways to solve the Reynolds equation with a
 complementarity condition (cavitation, limited oil supply):
 
@@ -78,4 +82,5 @@ The steps
    probleme_physique/index
    reynolds_sans_cavitation/index
    cas_noye/index
+   starved_case/index
    bibliographie
